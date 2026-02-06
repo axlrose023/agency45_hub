@@ -1,4 +1,4 @@
-# Template API
+# Agency45 Hub
 
 ## Setup:
 ```bash

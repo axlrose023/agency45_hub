@@ -5,7 +5,7 @@ from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Depends, Path
 from fastapi.params import Query
 
-from app.api.modules.auth.services.auth import AuthenticateUser
+from app.api.modules.auth.services.auth import AdminRequired, AuthenticateUser
 from app.api.modules.users.models import User
 from app.api.modules.users.schema import (
     CreateUserRequest,
@@ -22,7 +22,9 @@ router = APIRouter(route_class=DishkaRoute)
 async def create_user(
     request: CreateUserRequest,
     service: FromDishka[UserService],
+    current_user: User = Depends(AdminRequired()),
 ) -> UserResponse:
+    """Create a new user (admin only)."""
     return await service.create_user(request)
 
 

@@ -1,4 +1,4 @@
-name: fastapi-template
+name: agency45_hub
 
 services:
   app: &app

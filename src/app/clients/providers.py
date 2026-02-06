@@ -6,6 +6,7 @@ import httpx
 from dishka import Provider, Scope, provide
 
 from app.clients.example_service import ExampleServiceClient
+from app.clients.facebook import FacebookClient
 from app.settings import Config
 
 
@@ -73,12 +74,11 @@ class HttpClientsProvider(Provider):
         """
         return ExampleServiceClient(client, config)
 
-    # Add more client providers here as needed:
-    #
-    # @provide(scope=Scope.REQUEST)
-    # def get_another_service_client(
-    #     self,
-    #     client: httpx.AsyncClient,
-    #     config: Config,
-    # ) -> AnotherServiceClient:
-    #     return AnotherServiceClient(client, config)
+    @provide(scope=Scope.REQUEST)
+    def get_facebook_client(
+        self,
+        client: httpx.AsyncClient,
+        config: Config,
+    ) -> FacebookClient:
+        """Provide Facebook Graph API client."""
+        return FacebookClient(client, config.facebook)

@@ -5,7 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.modules.auth.service import AuthService
 from app.api.modules.auth.services import JwtService
+from app.api.modules.facebook.service import FacebookService
+from app.api.modules.facebook.services import FacebookSDKService
+from app.api.modules.telegram.service import TelegramService
 from app.api.modules.users.service import UserService
+from app.clients.facebook import FacebookClient
 from app.clients.providers import HttpClientsProvider
 from app.database.engine import SessionFactory
 from app.database.uow import UnitOfWork
@@ -48,6 +52,22 @@ class ServicesProvider(Provider):
         self, uow: UnitOfWork, auth_service: AuthService
     ) -> UserService:
         return UserService(uow, auth_service)
+
+    @provide(scope=Scope.REQUEST)
+    def get_facebook_sdk_service(self, client: FacebookClient) -> FacebookSDKService:
+        return FacebookSDKService(client)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_facebook_service(
+        self, uow: UnitOfWork, sdk: FacebookSDKService
+    ) -> FacebookService:
+        return FacebookService(uow, sdk)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_telegram_service(
+        self, uow: UnitOfWork, config: Config
+    ) -> TelegramService:
+        return TelegramService(uow, config.telegram)
 
 
 def get_async_container() -> AsyncContainer:

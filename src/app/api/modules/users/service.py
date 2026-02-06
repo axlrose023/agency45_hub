@@ -56,6 +56,7 @@ class UserService:
             username=request.username,
             password=hashed_password,
             is_active=True,
+            ad_account_id=request.ad_account_id,
         )
         await self.uow.users.create(user)
         await self.uow.commit()

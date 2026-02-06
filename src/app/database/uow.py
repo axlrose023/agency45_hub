@@ -2,15 +2,21 @@ from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.modules.facebook.gateway import FacebookAuthGateway
+from app.api.modules.telegram.gateway import TelegramGateway
 from app.api.modules.users.gateway import UserGateway
 
 
 class UnitOfWork:
     users: UserGateway
+    facebook_auth: FacebookAuthGateway
+    telegram: TelegramGateway
 
     def __init__(self, session: AsyncSession):
         self.session = session
         self.users = UserGateway(session)
+        self.facebook_auth = FacebookAuthGateway(session)
+        self.telegram = TelegramGateway(session)
 
     async def __aenter__(self):
         return self

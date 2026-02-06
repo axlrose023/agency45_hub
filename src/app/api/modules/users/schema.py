@@ -9,6 +9,10 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     username: str
+    is_admin: bool
+    ad_account_id: str | None = None
+    telegram_chat_id: int | None = None
+    telegram_token: str | None = None
 
 
 class UsersPaginationResponse(Pagination[UserResponse]):
@@ -25,5 +29,6 @@ class UsersPaginationParams(PaginationParams):
 class CreateUserRequest(BaseModel):
     username: str = Field(..., min_length=1)
     password: str = Field(..., min_length=1)
+    ad_account_id: str | None = Field(None, description="Facebook Ad Account ID to assign")
 
     model_config = ConfigDict(extra="forbid")

@@ -29,7 +29,7 @@ class JwtConfig(BaseModel):
 
 
 class APIConfig(BaseModel):
-    title: str = "Template API"
+    title: str = "Agency45 Hub API"
     version: str = "1.0.0"
     port: int = 8000
     host: str = "0.0.0.0"
@@ -37,6 +37,27 @@ class APIConfig(BaseModel):
 
     page_max_size: int = 100
     page_default_size: int = 10
+
+
+class FacebookConfig(BaseModel):
+    app_id: str
+    app_secret: str
+    api_version: str = "v21.0"
+    base_url: str = "https://graph.facebook.com"
+
+    # Insights fields
+    ad_insight_fields: str = "spend,impressions,clicks,cpc,cpm,ctr,reach"
+    campaign_insight_fields: str = (
+        "campaign_name,spend,impressions,clicks,cpc,cpm,ctr,reach"
+    )
+
+    # Active status filter
+    active_statuses: list[str] = ["ACTIVE"]
+
+
+class TelegramConfig(BaseModel):
+    bot_token: str
+    bot_link: str
 
 
 class PathsConfig:
@@ -61,6 +82,8 @@ class Config(BaseSettings):
 
     api: APIConfig
     jwt: JwtConfig
+    facebook: FacebookConfig
+    telegram: TelegramConfig
 
     postgres: PostgresConfig
     redis: RedisConfig

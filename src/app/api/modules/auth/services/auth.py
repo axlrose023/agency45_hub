@@ -75,3 +75,18 @@ class AuthenticateUser:
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+class AdminRequired:
+    """Dependency that requires the user to be an admin."""
+
+    async def __call__(
+        self,
+        user: User = Depends(AuthenticateUser()),
+    ) -> User:
+        if not user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required",
+            )
+        return user
