@@ -1,0 +1,24 @@
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar';
+import TopBar from './TopBar';
+import { DateRangeContext, getDefaultDateRange } from '@/hooks/useDateRange';
+import type { DateRange } from '@/types/facebook';
+
+export default function AppLayout() {
+  const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange);
+
+  return (
+    <DateRangeContext.Provider value={{ dateRange, setDateRange }}>
+      <div className="flex min-h-screen bg-brand-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopBar />
+          <main className="flex-1 p-6 overflow-auto">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+    </DateRangeContext.Provider>
+  );
+}

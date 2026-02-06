@@ -1,6 +1,7 @@
 """HTTP clients provider for dependency injection."""
 
 from collections.abc import AsyncIterator
+from importlib.util import find_spec
 
 import httpx
 from dishka import Provider, Scope, provide
@@ -8,6 +9,8 @@ from dishka import Provider, Scope, provide
 from app.clients.example_service import ExampleServiceClient
 from app.clients.facebook import FacebookClient
 from app.settings import Config
+
+HTTP2_AVAILABLE = find_spec("h2") is not None
 
 
 class HttpClientsProvider(Provider):
@@ -51,7 +54,8 @@ class HttpClientsProvider(Provider):
         async with httpx.AsyncClient(
             timeout=httpx.Timeout(30.0),
             limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-            http2=True,
+            # Avoid runtime ImportError if optional http2 extras are not installed.
+            http2=HTTP2_AVAILABLE,
             follow_redirects=True,
         ) as client:
             yield client
