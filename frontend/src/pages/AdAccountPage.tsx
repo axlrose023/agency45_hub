@@ -80,14 +80,16 @@ export default function AdAccountPage() {
       ) : (
         <div className="space-y-4">
           {groups.map((group) => (
-            <button
+            <div
               key={group.objective}
-              onClick={() =>
-                navigate(`/accounts/${accountId}/objective/${encodeURIComponent(group.objective)}`)
-              }
-              className="w-full bg-white rounded-xl border border-brand-gray-200 p-6 text-left hover:shadow-md hover:border-brand-gray-300 transition-all group"
+              className="bg-white rounded-xl border border-brand-gray-200 p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
             >
-              <div className="flex items-center justify-between mb-5">
+              <button
+                onClick={() =>
+                  navigate(`/accounts/${accountId}/objective/${encodeURIComponent(group.objective)}`)
+                }
+                className="flex items-center justify-between mb-5 w-full text-left group"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-lg bg-brand-gray-100 flex items-center justify-center text-brand-gray-600">
                     {objectiveIcons[group.objective] || <Target size={22} />}
@@ -105,9 +107,9 @@ export default function AdAccountPage() {
                   size={22}
                   className="text-brand-gray-400 group-hover:text-brand-black transition-colors"
                 />
-              </div>
+              </button>
               <InsightGrid insights={group.aggregatedInsights} compact />
-            </button>
+            </div>
           ))}
         </div>
       )}

@@ -53,27 +53,28 @@ export default function AdsPage() {
               key={ad.ad_id}
               className="bg-white rounded-xl border border-brand-gray-200 overflow-hidden"
             >
-              <div className="flex flex-col lg:flex-row">
+              {/* Top: Creative + Info side by side */}
+              <div className="flex flex-col sm:flex-row">
                 {/* Creative preview */}
-                <div className="lg:w-80 flex-shrink-0 bg-brand-gray-50 border-b lg:border-b-0 lg:border-r border-brand-gray-200">
+                <div className="sm:w-64 md:w-80 flex-shrink-0 bg-brand-gray-50">
                   {ad.creative?.image_url || ad.creative?.thumbnail_url ? (
                     <img
                       src={ad.creative.image_url || ad.creative.thumbnail_url || ''}
                       alt={ad.creative.title || ad.ad_name || 'Ad creative'}
-                      className="w-full h-48 lg:h-full object-cover"
+                      className="w-full h-56 sm:h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-48 lg:h-full flex items-center justify-center">
+                    <div className="w-full h-56 sm:h-full min-h-[160px] flex items-center justify-center">
                       <ImageOff size={40} className="text-brand-gray-300" />
                     </div>
                   )}
                 </div>
 
-                {/* Content */}
+                {/* Ad info */}
                 <div className="flex-1 p-6">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="font-heading font-semibold text-brand-black">
+                      <h3 className="font-heading font-semibold text-lg text-brand-black">
                         {ad.ad_name || 'Unnamed Ad'}
                       </h3>
                       <p className="text-xs text-brand-gray-500 mt-0.5">ID: {ad.ad_id}</p>
@@ -81,16 +82,15 @@ export default function AdsPage() {
                     <StatusBadge status={ad.status} />
                   </div>
 
-                  {/* Creative text */}
                   {ad.creative && (
-                    <div className="mb-5 space-y-1">
+                    <div className="space-y-1.5">
                       {ad.creative.title && (
                         <p className="text-sm font-heading font-medium text-brand-gray-800">
                           {ad.creative.title}
                         </p>
                       )}
                       {ad.creative.body && (
-                        <p className="text-sm text-brand-gray-600 line-clamp-2">
+                        <p className="text-sm text-brand-gray-600 line-clamp-3">
                           {ad.creative.body}
                         </p>
                       )}
@@ -102,16 +102,19 @@ export default function AdsPage() {
                           className="inline-flex items-center gap-1 text-xs text-brand-accent hover:underline mt-1"
                         >
                           <ExternalLink size={12} />
-                          {ad.creative.link_url.length > 50
-                            ? ad.creative.link_url.slice(0, 50) + '...'
+                          {ad.creative.link_url.length > 60
+                            ? ad.creative.link_url.slice(0, 60) + '...'
                             : ad.creative.link_url}
                         </a>
                       )}
                     </div>
                   )}
-
-                  <InsightGrid insights={ad.insights} compact />
                 </div>
+              </div>
+
+              {/* Bottom: Insights on full width */}
+              <div className="border-t border-brand-gray-200 p-6 bg-brand-gray-50/50">
+                <InsightGrid insights={ad.insights} />
               </div>
             </div>
           ))}

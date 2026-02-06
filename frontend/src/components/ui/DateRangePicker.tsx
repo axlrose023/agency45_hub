@@ -4,6 +4,13 @@ import { useState } from 'react';
 
 const presets = [
   {
+    label: 'Today',
+    range: () => {
+      const today = new Date().toISOString().split('T')[0];
+      return { since: today, until: today };
+    },
+  },
+  {
     label: 'This Month',
     range: () => {
       const now = new Date();

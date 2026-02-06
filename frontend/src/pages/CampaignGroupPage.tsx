@@ -58,23 +58,23 @@ export default function CampaignGroupPage() {
       ) : (
         <div className="space-y-4">
           {campaigns.map((campaign) => (
-            <button
+            <div
               key={campaign.campaign_id}
-              onClick={() =>
-                navigate(`/accounts/${accountId}/campaigns/${campaign.campaign_id}/adsets`)
-              }
-              className="w-full bg-white rounded-xl border border-brand-gray-200 p-6 text-left hover:shadow-md hover:border-brand-gray-300 transition-all group"
+              className="bg-white rounded-xl border border-brand-gray-200 p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <h3 className="font-heading font-semibold text-brand-black">
-                      {campaign.campaign_name || 'Unnamed Campaign'}
-                    </h3>
-                    <p className="text-xs text-brand-gray-500 mt-0.5">
-                      ID: {campaign.campaign_id}
-                    </p>
-                  </div>
+              <button
+                onClick={() =>
+                  navigate(`/accounts/${accountId}/campaigns/${campaign.campaign_id}/adsets`)
+                }
+                className="flex items-center justify-between mb-4 w-full text-left group"
+              >
+                <div>
+                  <h3 className="font-heading font-semibold text-brand-black">
+                    {campaign.campaign_name || 'Unnamed Campaign'}
+                  </h3>
+                  <p className="text-xs text-brand-gray-500 mt-0.5">
+                    ID: {campaign.campaign_id}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusBadge status={campaign.status} />
@@ -83,9 +83,9 @@ export default function CampaignGroupPage() {
                     className="text-brand-gray-400 group-hover:text-brand-black transition-colors"
                   />
                 </div>
-              </div>
+              </button>
               <InsightGrid insights={campaign.insights} compact />
-            </button>
+            </div>
           ))}
         </div>
       )}

@@ -49,12 +49,14 @@ export default function AdSetsPage() {
       ) : (
         <div className="space-y-4">
           {adsets.map((adset) => (
-            <button
+            <div
               key={adset.adset_id}
-              onClick={() => navigate(`/adsets/${adset.adset_id}/ads`)}
-              className="w-full bg-white rounded-xl border border-brand-gray-200 p-6 text-left hover:shadow-md hover:border-brand-gray-300 transition-all group"
+              className="bg-white rounded-xl border border-brand-gray-200 p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
             >
-              <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => navigate(`/adsets/${adset.adset_id}/ads`)}
+                className="flex items-center justify-between mb-4 w-full text-left group"
+              >
                 <div>
                   <h3 className="font-heading font-semibold text-brand-black">
                     {adset.adset_name || 'Unnamed Ad Set'}
@@ -70,7 +72,7 @@ export default function AdSetsPage() {
                     className="text-brand-gray-400 group-hover:text-brand-black transition-colors"
                   />
                 </div>
-              </div>
+              </button>
 
               {/* Targeting summary */}
               {adset.targeting && Object.keys(adset.targeting).length > 0 && (
@@ -89,7 +91,7 @@ export default function AdSetsPage() {
               )}
 
               <InsightGrid insights={adset.insights} compact />
-            </button>
+            </div>
           ))}
         </div>
       )}

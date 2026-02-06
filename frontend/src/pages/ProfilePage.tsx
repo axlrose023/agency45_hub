@@ -1,31 +1,84 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/store/authStore';
 import { getRegistrationLink, telegramLogout, getChatId } from '@/api/telegram';
-import { Shield, User, Building2, MessageCircle, Link, Unlink } from 'lucide-react';
+import { getAdAccounts } from '@/api/facebook';
+import { Shield, User, Building2, MessageCircle, Unlink, LogOut, Send, RefreshCw, ExternalLink } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const navigate = useNavigate();
   const [telegramConnected, setTelegramConnected] = useState<boolean>(false);
   const [chatId, setChatId] = useState<number | null>(null);
-  const [registrationLink, setRegistrationLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [waitingForBot, setWaitingForBot] = useState(false);
+  const [botLink, setBotLink] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [adAccountName, setAdAccountName] = useState<string | null>(null);
+
+  const checkConnection = useCallback(async () => {
+    setChecking(true);
+    try {
+      const data = await getChatId();
+      setChatId(data.chat_id);
+      if (data.chat_id) {
+        setTelegramConnected(true);
+        setWaitingForBot(false);
+        setBotLink(null);
+      }
+    } catch {
+      // ignore
+    }
+    setChecking(false);
+  }, []);
 
   useEffect(() => {
-    getChatId()
-      .then((data) => {
-        setChatId(data.chat_id);
-        setTelegramConnected(!!data.chat_id);
-      })
-      .catch(() => {});
-  }, []);
+    checkConnection();
+  }, [checkConnection]);
+
+  useEffect(() => {
+    if (user?.ad_account_id) {
+      getAdAccounts()
+        .then((accounts) => {
+          const match = accounts.find((a) => a.account_id === user.ad_account_id);
+          if (match) setAdAccountName(match.name || null);
+        })
+        .catch(() => {});
+    }
+  }, [user?.ad_account_id]);
+
+  // Auto-poll when waiting for bot connection
+  useEffect(() => {
+    if (!waitingForBot) return;
+    const interval = setInterval(() => {
+      getChatId()
+        .then((data) => {
+          if (data.chat_id) {
+            setChatId(data.chat_id);
+            setTelegramConnected(true);
+            setWaitingForBot(false);
+            setBotLink(null);
+          }
+        })
+        .catch(() => {});
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [waitingForBot]);
 
   const handleConnectTelegram = async () => {
     setLoading(true);
+    setError('');
     try {
       const data = await getRegistrationLink();
-      setRegistrationLink(data.registration_link);
+      setBotLink(data.registration_link);
+      setWaitingForBot(true);
+      // Auto-open in new tab
+      window.open(data.registration_link, '_blank');
     } catch {
-      // ignore
+      setError('Failed to generate registration link. Please try again.');
     }
     setLoading(false);
   };
@@ -36,17 +89,23 @@ export default function ProfilePage() {
       await telegramLogout();
       setTelegramConnected(false);
       setChatId(null);
-      setRegistrationLink(null);
+      setWaitingForBot(false);
+      setBotLink(null);
     } catch {
       // ignore
     }
     setLoading(false);
   };
 
+  const handleLogout = () => {
+    clearAuth();
+    navigate('/login');
+  };
+
   if (!user) return null;
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-heading font-bold text-brand-black">Profile</h1>
         <p className="text-brand-gray-500 text-sm mt-1">Your account information</p>
@@ -77,21 +136,30 @@ export default function ProfilePage() {
 
         <div className="space-y-4">
           <div className="flex items-center gap-3 py-3 border-t border-brand-gray-100">
-            <Building2 size={18} className="text-brand-gray-400" />
+            <Building2 size={18} className="text-brand-gray-400 flex-shrink-0" />
             <div>
               <p className="text-xs text-brand-gray-500 font-heading uppercase tracking-wider">
                 Ad Account
               </p>
-              <p className="text-sm text-brand-black font-medium">
-                {user.ad_account_id || 'No account assigned'}
-              </p>
+              {user.ad_account_id ? (
+                <div>
+                  <p className="text-sm text-brand-black font-medium">
+                    {adAccountName || user.ad_account_id}
+                  </p>
+                  {adAccountName && (
+                    <p className="text-xs text-brand-gray-400">ID: {user.ad_account_id}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-brand-gray-400">No account assigned</p>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Telegram Card */}
-      <div className="bg-white rounded-xl border border-brand-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-brand-gray-200 p-6 mb-6">
         <div className="flex items-center gap-3 mb-4">
           <MessageCircle size={20} className="text-brand-gray-600" />
           <h3 className="font-heading font-semibold text-brand-black">Telegram Integration</h3>
@@ -115,39 +183,75 @@ export default function ProfilePage() {
               Disconnect Telegram
             </button>
           </div>
+        ) : waitingForBot ? (
+          <div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="text-sm text-amber-800 font-medium">
+                  Waiting for Telegram connection...
+                </span>
+              </div>
+              <p className="text-xs text-amber-700">
+                A Telegram window should have opened. Press <strong>Start</strong> in the bot to complete the connection. This page will update automatically.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {botLink && (
+                <a
+                  href={botLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-800 transition-colors"
+                >
+                  <ExternalLink size={16} />
+                  Open Telegram Again
+                </a>
+              )}
+              <button
+                onClick={checkConnection}
+                disabled={checking}
+                className="flex items-center gap-2 px-4 py-2.5 border border-brand-gray-300 rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-50 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw size={16} className={checking ? 'animate-spin' : ''} />
+                Check Status
+              </button>
+            </div>
+          </div>
         ) : (
           <div>
             <p className="text-sm text-brand-gray-600 mb-4">
               Connect your Telegram account to receive notifications.
             </p>
 
-            {registrationLink ? (
-              <div className="bg-brand-gray-50 rounded-lg p-4 border border-brand-gray-200">
-                <p className="text-sm text-brand-gray-600 mb-2">
-                  Click the link below to connect your Telegram:
-                </p>
-                <a
-                  href={registrationLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-brand-accent font-medium hover:underline break-all"
-                >
-                  <Link size={14} />
-                  {registrationLink}
-                </a>
+            {error && (
+              <div className="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3 border border-red-200 mb-4">
+                {error}
               </div>
-            ) : (
-              <button
-                onClick={handleConnectTelegram}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-800 transition-colors disabled:opacity-50"
-              >
-                <Link size={16} />
-                {loading ? 'Loading...' : 'Connect Telegram'}
-              </button>
             )}
+
+            <button
+              onClick={handleConnectTelegram}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-800 transition-colors disabled:opacity-50"
+            >
+              <Send size={16} />
+              {loading ? 'Connecting...' : 'Connect Telegram'}
+            </button>
           </div>
         )}
+      </div>
+
+      {/* Logout */}
+      <div className="bg-white rounded-xl border border-brand-gray-200 p-6">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-heading font-medium hover:bg-red-50 transition-colors"
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
       </div>
     </div>
   );

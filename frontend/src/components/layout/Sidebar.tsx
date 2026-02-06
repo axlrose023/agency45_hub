@@ -25,17 +25,20 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'bg-brand-black text-white flex flex-col min-h-screen transition-all duration-300',
+        'bg-brand-black text-white flex flex-col min-h-screen sticky top-0 transition-all duration-300',
         collapsed ? 'w-[72px]' : 'w-64',
       )}
     >
-      {/* Logo */}
-      <div className="p-4 flex items-center gap-3 border-b border-brand-gray-800">
+      {/* Logo - clickable to dashboard */}
+      <button
+        onClick={() => navigate('/dashboard')}
+        className="p-4 flex items-center gap-3 border-b border-brand-gray-800 hover:bg-white/5 transition-colors"
+      >
         <img src="/agency45.png" alt="Agency45" className="w-10 h-10 rounded-full flex-shrink-0" />
         {!collapsed && (
           <span className="font-heading font-bold text-lg tracking-tight">Agency45</span>
         )}
-      </div>
+      </button>
 
       {/* Navigation */}
       <nav className="flex-1 py-4">
@@ -60,35 +63,40 @@ export default function Sidebar() {
           ))}
       </nav>
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center py-2 mx-2 mb-2 rounded-lg text-brand-gray-500 hover:text-white hover:bg-white/5 transition-colors"
-      >
-        {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
+      {/* Bottom section */}
+      <div className="border-t border-brand-gray-800">
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="flex items-center justify-center w-full py-3 text-brand-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+        >
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
 
-      {/* User info */}
-      <div className="border-t border-brand-gray-800 p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-brand-gray-700 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-heading font-bold">
-              {user?.username?.charAt(0).toUpperCase() || '?'}
-            </span>
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.username}</p>
-              <p className="text-xs text-brand-gray-500">{isAdmin ? 'Admin' : 'User'}</p>
+        {/* User info */}
+        <div className="border-t border-brand-gray-800 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-brand-gray-700 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-heading font-bold">
+                {user?.username?.charAt(0).toUpperCase() || '?'}
+              </span>
             </div>
-          )}
-          <button
-            onClick={handleLogout}
-            className="text-brand-gray-500 hover:text-white transition-colors flex-shrink-0"
-            title="Logout"
-          >
-            <LogOut size={18} />
-          </button>
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{user?.username}</p>
+                <p className="text-xs text-brand-gray-500">{isAdmin ? 'Admin' : 'User'}</p>
+              </div>
+            )}
+            {!collapsed && (
+              <button
+                onClick={handleLogout}
+                className="text-brand-gray-500 hover:text-white transition-colors flex-shrink-0"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </aside>
