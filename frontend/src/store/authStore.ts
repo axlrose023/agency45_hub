@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { jwtDecode } from 'jwt-decode';
 import type { UserResponse } from '@/types/user';
+import { jwtDecode } from 'jwt-decode';
+import { create } from 'zustand';
 
 interface JwtPayload {
   sub: string;
@@ -79,7 +79,6 @@ export const useAuthStore = create<AuthState>((set) => ({
           });
           return true;
         }
-        // Access expired but refresh might work
         set({
           accessToken: access,
           refreshToken: refresh,

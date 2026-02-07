@@ -1,5 +1,3 @@
-"""Telegram API routes."""
-
 from typing import Literal
 
 from dishka import FromDishka
@@ -23,7 +21,6 @@ async def get_registration_link(
     current_user: User = Depends(AuthenticateUser()),
     locale: Literal["ua", "ru"] = "ua",
 ) -> TelegramRegisterResponse:
-    """Get telegram bot registration link with unique token."""
     return await service.get_registration_link(current_user.id, locale)
 
 
@@ -32,7 +29,6 @@ async def logout(
     service: FromDishka[TelegramService],
     current_user: User = Depends(AuthenticateUser()),
 ) -> None:
-    """Disconnect telegram from user account."""
     await service.logout(current_user.id)
 
 
@@ -41,5 +37,4 @@ async def get_chat_id(
     service: FromDishka[TelegramService],
     current_user: User = Depends(AuthenticateUser()),
 ) -> TelegramChatIdResponse:
-    """Get user's telegram chat ID."""
     return await service.get_chat_id(current_user.id)

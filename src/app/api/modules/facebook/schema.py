@@ -1,5 +1,3 @@
-"""Facebook API schemas."""
-
 from datetime import date
 from typing import Any
 
@@ -7,28 +5,20 @@ from pydantic import BaseModel, Field
 
 
 class TimeRangeParams(BaseModel):
-    """Time range parameters for insights."""
-
     since: date = Field(description="Start date for insights")
     until: date = Field(description="End date for insights")
 
 
 class ExchangeTokenRequest(BaseModel):
-    """Request to exchange short-lived token for long-lived token."""
-
     short_lived_token: str = Field(description="Short-lived user access token")
 
 
 class ExchangeCodeRequest(BaseModel):
-    """Request to exchange OAuth authorization code."""
-
     code: str = Field(description="OAuth authorization code from Facebook redirect")
     redirect_uri: str = Field(description="Redirect URI used in the OAuth flow")
 
 
 class InsightsData(BaseModel):
-    """Facebook insights data."""
-
     spend: str | None = None
     impressions: str | None = None
     clicks: str | None = None
@@ -39,8 +29,6 @@ class InsightsData(BaseModel):
 
 
 class AdAccountResponse(BaseModel):
-    """Ad account response."""
-
     account_id: str
     name: str | None = None
     currency: str | None = None
@@ -48,8 +36,6 @@ class AdAccountResponse(BaseModel):
 
 
 class CampaignResponse(BaseModel):
-    """Campaign response with insights."""
-
     campaign_id: str
     campaign_name: str | None = None
     objective: str | None = None
@@ -58,8 +44,6 @@ class CampaignResponse(BaseModel):
 
 
 class AdSetResponse(BaseModel):
-    """AdSet response with insights."""
-
     adset_id: str
     adset_name: str | None = None
     targeting: dict[str, Any] = Field(default_factory=dict)
@@ -68,8 +52,6 @@ class AdSetResponse(BaseModel):
 
 
 class CreativeData(BaseModel):
-    """Ad creative data."""
-
     id: str | None = None
     thumbnail_url: str | None = None
     body: str | None = None
@@ -80,8 +62,6 @@ class CreativeData(BaseModel):
 
 
 class AdResponse(BaseModel):
-    """Ad response with insights."""
-
     ad_id: str
     ad_name: str | None = None
     status: str | None = None

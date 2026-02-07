@@ -2,7 +2,6 @@ from app.settings import PathsConfig
 
 
 def import_models(config: PathsConfig) -> None:
-    """Import all models for Alembic migrations."""
     # for path in config.models_path.glob("*.py"):
     #     if path.name != "__init__.py":
     #         __import__(f"app.database.models.{path.stem}")

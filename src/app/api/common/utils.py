@@ -16,11 +16,6 @@ def build_filters(
     filters: dict[str, Any],
     delimiter: str = "__",
 ) -> list[BinaryExpression]:
-    """Build SQLAlchemy filter expressions from a dictionary of field names and values.
-
-    Supports:
-    is, is_not, in, not_in, search (ilike), eq, ne, lt, lte, gt, gte operations.
-    """
     expressions: list[BinaryExpression] = []
     for field_name, value in filters.items():
         logger.debug(f"Building filter for {field_name} with value {value}")

@@ -19,7 +19,6 @@ config = get_config()
 setup_logging(config.env)
 logger = logging.getLogger(__name__)
 
-# Telegram bot service
 _telegram_bot = TelegramBotService(config.telegram)
 
 router = APIRouter()
@@ -27,12 +26,10 @@ router = APIRouter()
 
 @router.get("/ping")
 async def ping() -> None | dict:
-    """Ping endpoint to check if the service is alive."""
     return {"message": "pong"}
 
 
 async def _ensure_default_admin() -> None:
-    """Create default admin user (admin/admin, is_admin=True) if it does not exist."""
     import bcrypt
 
     from app.api.modules.users.models import User
@@ -75,7 +72,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def get_production_app() -> FastAPI:
-    """Get the FastAPI application instance."""
     app = FastAPI(
         title=config.api.title,
         version=config.api.version,
@@ -95,7 +91,6 @@ def get_production_app() -> FastAPI:
 
     setup_dishka(get_async_container(), app)
 
-    # Setup Prometheus metrics
     instrumentator = Instrumentator()
     instrumentator.instrument(app).expose(app)
 

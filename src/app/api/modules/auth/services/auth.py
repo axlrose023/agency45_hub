@@ -78,8 +78,6 @@ class AuthenticateUser:
 
 
 class AdminRequired:
-    """Dependency that requires the user to be an admin."""
-
     async def __call__(
         self,
         user: User = Depends(AuthenticateUser()),

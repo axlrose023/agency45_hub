@@ -19,7 +19,6 @@ alembic_ini_path = Path(__file__).parent.parent.parent / "alembic.ini"
 
 
 def get_alembic_config() -> Config:
-    """Get Alembic configuration."""
     if not alembic_ini_path.exists():
         raise FileNotFoundError("alembic.ini not found")
     return Config("alembic.ini")
@@ -29,14 +28,11 @@ def get_alembic_config() -> Config:
 def tests(
     path: Annotated[str, typer.Argument()] = "src/tests",
 ) -> None:
-    """Run parallel tests."""
-
     subprocess.run(["uv", "run", "pytest", path, "-n", "auto"])
 
 
 @app.command("migration")
 def migration(name: Annotated[str | None, typer.Option(prompt=True)] = None) -> None:
-    """Generate a new Alembic migration."""
     alembic_cfg = get_alembic_config()
     command.revision(alembic_cfg, message=name, autogenerate=True)
     typer.echo(
@@ -49,7 +45,6 @@ def migration(name: Annotated[str | None, typer.Option(prompt=True)] = None) -> 
 
 @app.command("migrations")
 def migrations() -> None:
-    """list migration files."""
     if not alembic_ini_path.exists():
         raise FileNotFoundError("alembic.ini not found")
     config = ConfigParser()
@@ -63,7 +58,6 @@ def migrations() -> None:
 
 @app.command("upgrade")
 def upgrade(revision: str = "head") -> None:
-    """Upgrade the database to a specific revision."""
     alembic_cfg = get_alembic_config()
     command.upgrade(alembic_cfg, revision)
     typer.echo(
@@ -76,7 +70,6 @@ def upgrade(revision: str = "head") -> None:
 
 @app.command("downgrade")
 def downgrade(revision: str = "-1") -> None:
-    """Downgrade the database to a specific revision."""
     alembic_cfg = get_alembic_config()
     command.downgrade(alembic_cfg, revision)
     typer.echo(
@@ -93,8 +86,6 @@ def create_user(
     password: Annotated[str, typer.Option(prompt=True, hide_input=True)] = None,
     is_admin: Annotated[bool, typer.Option("--admin")] = False,
 ) -> None:
-    """Create a new user."""
-
     async def _create_user():
         import bcrypt
 

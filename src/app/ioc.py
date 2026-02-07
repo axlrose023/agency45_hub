@@ -17,8 +17,6 @@ from app.settings import Config, get_config
 
 
 class AppProvider(Provider):
-    """Application provider for dependency injection."""
-
     @provide(scope=Scope.APP)
     def get_config(self) -> Config:
         return get_config()
@@ -35,8 +33,6 @@ class AppProvider(Provider):
 
 
 class ServicesProvider(Provider):
-    """Services provider for dependency injection."""
-
     @provide(scope=Scope.APP)
     def get_jwt_service(self, config: Config) -> JwtService:
         return JwtService(config)
@@ -64,9 +60,7 @@ class ServicesProvider(Provider):
         return FacebookService(uow, sdk)
 
     @provide(scope=Scope.REQUEST)
-    def get_telegram_service(
-        self, uow: UnitOfWork, config: Config
-    ) -> TelegramService:
+    def get_telegram_service(self, uow: UnitOfWork, config: Config) -> TelegramService:
         return TelegramService(uow, config.telegram)
 
 

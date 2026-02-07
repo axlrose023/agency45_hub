@@ -1,5 +1,3 @@
-"""Facebook API routes."""
-
 from datetime import date
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
@@ -24,7 +22,6 @@ async def get_auth_status(
     service: FromDishka[FacebookService],
     _: User = Depends(AdminRequired()),
 ) -> dict:
-    """Get Facebook auth status and app_id (admin only)."""
     return await service.get_auth_status()
 
 
@@ -34,7 +31,6 @@ async def exchange_code(
     service: FromDishka[FacebookService],
     _: User = Depends(AdminRequired()),
 ) -> None:
-    """Exchange OAuth code for long-lived token (admin only)."""
     await service.exchange_code(request.code, request.redirect_uri)
 
 
@@ -44,7 +40,6 @@ async def exchange_token(
     service: FromDishka[FacebookService],
     current_user: User = Depends(AdminRequired()),
 ) -> None:
-    """Exchange short-lived Facebook token for long-lived token (admin only)."""
     await service.exchange_token(request.short_lived_token)
 
 
@@ -53,7 +48,6 @@ async def get_ad_accounts(
     service: FromDishka[FacebookService],
     current_user: User = Depends(AuthenticateUser()),
 ) -> list[dict]:
-    """Get ad accounts. Admin sees all, user sees only assigned."""
     return await service.get_ad_accounts(current_user)
 
 
@@ -67,7 +61,6 @@ async def get_campaigns(
     since: date | None = Query(None, description="Start date (YYYY-MM-DD)"),
     until: date | None = Query(None, description="End date (YYYY-MM-DD)"),
 ) -> list[CampaignResponse]:
-    """Get campaigns for an ad account with insights."""
     return await service.get_campaigns(
         current_user, account_id, since=since, until=until
     )
@@ -85,7 +78,6 @@ async def get_adsets(
     since: date | None = Query(None, description="Start date (YYYY-MM-DD)"),
     until: date | None = Query(None, description="End date (YYYY-MM-DD)"),
 ) -> list[AdSetResponse]:
-    """Get adsets for a campaign with insights."""
     return await service.get_adsets(
         current_user, campaign_id, account_id, since=since, until=until
     )
@@ -99,5 +91,4 @@ async def get_ads(
     since: date | None = Query(None, description="Start date (YYYY-MM-DD)"),
     until: date | None = Query(None, description="End date (YYYY-MM-DD)"),
 ) -> list[AdResponse]:
-    """Get ads for an adset with insights."""
     return await service.get_ads(adset_id, since=since, until=until)

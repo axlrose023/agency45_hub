@@ -25,7 +25,6 @@ async def create_user(
     service: FromDishka[UserService],
     current_user: User = Depends(AdminRequired()),
 ) -> UserResponse:
-    """Create a new user (admin only)."""
     return await service.create_user(request)
 
 
@@ -36,7 +35,6 @@ async def update_user(
     service: FromDishka[UserService],
     current_user: User = Depends(AdminRequired()),
 ) -> UserResponse:
-    """Update an existing user (admin only)."""
     return await service.update_user(user_id, request)
 
 

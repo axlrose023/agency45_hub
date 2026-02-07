@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore } from '@/store/authStore';
-import { getRegistrationLink, telegramLogout, getChatId } from '@/api/telegram';
 import { getAdAccounts } from '@/api/facebook';
-import { Shield, User, Building2, MessageCircle, Unlink, LogOut, Send, RefreshCw, ExternalLink } from 'lucide-react';
+import { getChatId, getRegistrationLink, telegramLogout } from '@/api/telegram';
+import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/i18n/locale';
+import { useAuthStore } from '@/store/authStore';
+import { Building2, ExternalLink, LogOut, MessageCircle, RefreshCw, Send, Shield, Unlink, User } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -38,7 +38,6 @@ export default function ProfilePage() {
         setTelegramConnected(false);
       }
     } catch {
-      // ignore
     }
     setChecking(false);
   }, []);
@@ -54,11 +53,10 @@ export default function ProfilePage() {
           const match = accounts.find((a) => a.account_id === user.ad_account_id);
           if (match) setAdAccountName(match.name || null);
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user?.ad_account_id]);
 
-  // Auto-poll when waiting for bot connection
   useEffect(() => {
     if (!waitingForBot) return;
     const interval = setInterval(() => {
@@ -72,7 +70,7 @@ export default function ProfilePage() {
             setBotLink(null);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }, 3000);
     return () => clearInterval(interval);
   }, [waitingForBot]);
@@ -84,7 +82,6 @@ export default function ProfilePage() {
       const data = await getRegistrationLink(locale === 'ru' ? 'ru' : 'ua');
       setBotLink(data.registration_link);
       setWaitingForBot(true);
-      // Auto-open in new tab
       window.open(data.registration_link, '_blank');
     } catch {
       setError(t('registrationLinkFailed'));
@@ -102,7 +99,6 @@ export default function ProfilePage() {
       setWaitingForBot(false);
       setBotLink(null);
     } catch {
-      // ignore
     }
     setLoading(false);
   };
@@ -134,11 +130,10 @@ export default function ProfilePage() {
           <div>
             <h2 className="text-lg sm:text-xl font-heading font-bold text-brand-black">{user.username}</h2>
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium mt-1 ${
-                user.is_admin
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium mt-1 ${user.is_admin
                   ? 'bg-brand-accent/10 text-brand-accent'
                   : 'bg-brand-gray-100 text-brand-gray-600'
-              }`}
+                }`}
             >
               {user.is_admin ? <Shield size={12} /> : <User size={12} />}
               {user.is_admin ? t('profileRoleAdmin') : t('profileRoleUser')}

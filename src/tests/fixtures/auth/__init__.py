@@ -9,7 +9,6 @@ async def authenticated_user(
     client: AsyncClient,
     user,  # noqa: F811
 ) -> dict:
-    """Authenticate user and return tokens."""
     login_data = {
         "username": user.username,
         "password": "admin123",

@@ -39,7 +39,6 @@ class AuthService:
         return self.jwt_service.create_token_pair(user)
 
     async def hash_password(self, password: str) -> str:
-        """Hash a password."""
         hashed = await asyncio.to_thread(
             lambda: bcrypt.hashpw(
                 password.encode("utf-8"),

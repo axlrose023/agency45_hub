@@ -1,5 +1,3 @@
-"""Facebook service - thin layer for routes."""
-
 import logging
 from datetime import date
 
@@ -17,14 +15,10 @@ from app.database.uow import UnitOfWork
 
 logger = logging.getLogger(__name__)
 
-# Common Graph API rate-limit codes:
-# 4: Application limit, 17: User limit, 32: Page limit, 613: Ads API limit.
 RATE_LIMIT_ERROR_CODES = {4, 17, 32, 613}
 
 
 class FacebookService:
-    """Thin service layer for Facebook routes."""
-
     def __init__(self, uow: UnitOfWork, sdk: FacebookSDKService):
         self.uow = uow
         self.sdk = sdk
@@ -32,7 +26,6 @@ class FacebookService:
     def _build_time_range(
         self, since: date | None, until: date | None
     ) -> dict[str, str]:
-        """Build time range dict from dates."""
         if since is not None and until is not None:
             if since > until:
                 raise HTTPException(
@@ -46,7 +39,6 @@ class FacebookService:
         return self.sdk.get_current_month_range()
 
     async def _get_access_token(self) -> str:
-        """Get shared long-lived access token."""
         fb_auth = await self.uow.facebook_auth.get()
         if not fb_auth or not fb_auth.long_token:
             raise HTTPException(
@@ -56,7 +48,6 @@ class FacebookService:
         return fb_auth.long_token
 
     def _check_account_access(self, user: User, account_id: str) -> None:
-        """Check if user has access to the ad account."""
         if user.is_admin:
             return
         if user.ad_account_id != account_id:
@@ -97,7 +88,6 @@ class FacebookService:
         ) from error
 
     async def get_auth_status(self) -> dict:
-        """Check if Facebook is connected and return app_id."""
         fb_auth = await self.uow.facebook_auth.get()
         return {
             "connected": bool(fb_auth and fb_auth.long_token),
@@ -105,7 +95,6 @@ class FacebookService:
         }
 
     async def exchange_code(self, code: str, redirect_uri: str) -> None:
-        """Exchange OAuth code for access token, then for long-lived token."""
         try:
             code_data = await self.sdk.exchange_code(code, redirect_uri)
         except FacebookAPIError as error:
@@ -123,7 +112,6 @@ class FacebookService:
         await self.uow.commit()
 
     async def exchange_token(self, short_lived_token: str) -> None:
-        """Exchange short-lived token for long-lived token and save it."""
         try:
             data = await self.sdk.exchange_token(short_lived_token)
         except FacebookAPIError as error:
@@ -134,7 +122,6 @@ class FacebookService:
         await self.uow.commit()
 
     async def get_ad_accounts(self, user: User) -> list[dict]:
-        """Get ad accounts based on user role."""
         access_token = await self._get_access_token()
         try:
             all_accounts = await self.sdk.get_ad_accounts(access_token)
@@ -158,7 +145,6 @@ class FacebookService:
         since: date | None = None,
         until: date | None = None,
     ) -> list[CampaignResponse]:
-        """Get campaigns for an ad account with insights."""
         self._check_account_access(user, account_id)
 
         access_token = await self._get_access_token()
@@ -180,7 +166,6 @@ class FacebookService:
         since: date | None = None,
         until: date | None = None,
     ) -> list[AdSetResponse]:
-        """Get adsets for a campaign with insights."""
         self._check_account_access(user, account_id)
 
         access_token = await self._get_access_token()
@@ -200,7 +185,6 @@ class FacebookService:
         since: date | None = None,
         until: date | None = None,
     ) -> list[AdResponse]:
-        """Get ads for an adset with insights."""
         access_token = await self._get_access_token()
         time_range = self._build_time_range(since, until)
 

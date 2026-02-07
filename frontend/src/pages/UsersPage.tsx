@@ -1,14 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
-import { getUsers, createUser, updateUser } from '@/api/users';
 import { getAdAccounts } from '@/api/facebook';
-import type { UserResponse, UsersPaginationResponse, UsersPaginationParams } from '@/types/user';
-import type { AdAccountResponse } from '@/types/facebook';
+import { createUser, getUsers, updateUser } from '@/api/users';
+import EmptyState from '@/components/ui/EmptyState';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Pagination from '@/components/ui/Pagination';
 import PasswordInput from '@/components/ui/PasswordInput';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import EmptyState from '@/components/ui/EmptyState';
-import { Plus, Search, X, Shield, User, SquarePen } from 'lucide-react';
 import { useI18n } from '@/i18n/locale';
+import type { AdAccountResponse } from '@/types/facebook';
+import type { UserResponse, UsersPaginationParams, UsersPaginationResponse } from '@/types/user';
+import { Plus, Search, Shield, SquarePen, User, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function UsersPage() {
   const [data, setData] = useState<UsersPaginationResponse | null>(null);
@@ -20,7 +20,6 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [adAccounts, setAdAccounts] = useState<AdAccountResponse[]>([]);
 
-  // Create user form
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newAdAccountId, setNewAdAccountId] = useState('');
@@ -39,7 +38,6 @@ export default function UsersPage() {
       const result = await getUsers(params);
       setData(result);
     } catch {
-      // ignore
     }
     setLoading(false);
   }, [page, search]);
@@ -49,7 +47,7 @@ export default function UsersPage() {
   }, [fetchUsers]);
 
   useEffect(() => {
-    getAdAccounts().then(setAdAccounts).catch(() => {});
+    getAdAccounts().then(setAdAccounts).catch(() => { });
   }, []);
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -179,11 +177,10 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium ${
-                          user.is_admin
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium ${user.is_admin
                             ? 'bg-brand-accent/10 text-brand-accent'
                             : 'bg-brand-gray-100 text-brand-gray-600'
-                        }`}
+                          }`}
                       >
                         {user.is_admin ? <Shield size={12} /> : <User size={12} />}
                         {user.is_admin ? t('roleAdmin') : t('roleUser')}
@@ -196,16 +193,14 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
-                          user.telegram_chat_id
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${user.telegram_chat_id
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-brand-gray-100 text-brand-gray-500'
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            user.telegram_chat_id ? 'bg-emerald-500' : 'bg-brand-gray-400'
-                          }`}
+                          className={`w-1.5 h-1.5 rounded-full ${user.telegram_chat_id ? 'bg-emerald-500' : 'bg-brand-gray-400'
+                            }`}
                         />
                         {user.telegram_chat_id
                           ? t('telegramConnected')

@@ -1,10 +1,10 @@
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useAuthStore } from '@/store/authStore';
-import { LayoutDashboard, Users, User, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { cn } from '@/utils/cn';
 import { useI18n } from '@/i18n/locale';
+import { useAuthStore } from '@/store/authStore';
+import { cn } from '@/utils/cn';
+import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, User, Users, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -19,7 +19,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { t } = useI18n();
 
-  // Close mobile menu on route change
   useEffect(() => {
     onMobileClose();
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps

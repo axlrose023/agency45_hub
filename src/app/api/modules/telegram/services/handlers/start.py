@@ -15,14 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 def parse_start_payload(payload: str | None) -> tuple[str | None, str | None]:
-    """Parse '/start <token>_<locale>' payload."""
     if not payload:
         return None, None
 
     token, separator, payload_locale = payload.rpartition("_")
     if separator and token and payload_locale in {"ua", "ru"}:
         return token, payload_locale
-    # Backward compatibility for previously generated links with "uk".
     if separator and token and payload_locale == "uk":
         return token, "ua"
     return payload, None
@@ -62,7 +60,6 @@ def register_start_handler(dp: Dispatcher) -> None:
                 await message.answer(get_message("invalid_token", response_locale))
                 return
 
-            # Check if this chat_id is already used by another user
             if existing_user_with_chat_id and existing_user_with_chat_id.id != user.id:
                 logger.debug(
                     "Disconnecting chat_id %s from user %s to connect user %s",
@@ -89,7 +86,9 @@ def register_start_handler(dp: Dispatcher) -> None:
                 user.telegram_chat_id,
             )
             tg_username = message.from_user.username if message.from_user else None
-            await gateway.update_telegram_chat_id(user.id, chat_id, username=tg_username)
+            await gateway.update_telegram_chat_id(
+                user.id, chat_id, username=tg_username
+            )
             await session.commit()
 
             await session.refresh(user)

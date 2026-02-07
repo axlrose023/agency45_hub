@@ -1,5 +1,3 @@
-"""Facebook Graph API client."""
-
 import json
 import logging
 from typing import Any
@@ -13,16 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class FacebookAPIError(HttpClientError):
-    """Facebook API specific error."""
-
     def __init__(self, message: str, error_code: int | None = None, **kwargs):
         self.error_code = error_code
         super().__init__(message, **kwargs)
 
 
 class FacebookClient(HttpClient):
-    """Client for Facebook Graph API."""
-
     def __init__(self, client: httpx.AsyncClient, config: FacebookConfig):
         super().__init__(
             client=client,
@@ -32,7 +26,6 @@ class FacebookClient(HttpClient):
         self.config = config
 
     def _get_active_filter(self) -> str:
-        """Build active status filter from config."""
         return json.dumps(
             [
                 {
@@ -49,7 +42,6 @@ class FacebookClient(HttpClient):
         access_token: str,
         params: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
-        """Fetch all pages from a paginated endpoint."""
         params = params or {}
         params["access_token"] = access_token
         items: list[dict[str, Any]] = []
@@ -74,10 +66,7 @@ class FacebookClient(HttpClient):
 
         return items
 
-    async def exchange_code(
-        self, code: str, redirect_uri: str
-    ) -> dict[str, Any]:
-        """Exchange OAuth authorization code for an access token."""
+    async def exchange_code(self, code: str, redirect_uri: str) -> dict[str, Any]:
         response = await self.get(
             "/oauth/access_token",
             params={
@@ -100,7 +89,6 @@ class FacebookClient(HttpClient):
         return data
 
     async def exchange_token(self, short_lived_token: str) -> dict[str, Any]:
-        """Exchange short-lived token for long-lived token."""
         response = await self.get(
             "/oauth/access_token",
             params={
@@ -123,7 +111,6 @@ class FacebookClient(HttpClient):
         return data
 
     async def get_ad_accounts(self, access_token: str) -> list[dict[str, Any]]:
-        """Get all ad accounts for the authenticated user."""
         return await self._fetch_with_pagination(
             "me/adaccounts",
             access_token,
@@ -138,7 +125,6 @@ class FacebookClient(HttpClient):
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        """Get active campaigns for an ad account with non-empty insights."""
         campaigns = await self._fetch_with_pagination(
             f"act_{account_id}/campaigns",
             access_token,
@@ -197,7 +183,6 @@ class FacebookClient(HttpClient):
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        """Get active adsets for a campaign with non-empty insights."""
         adsets = await self._fetch_with_pagination(
             f"{campaign_id}/adsets",
             access_token,
@@ -255,7 +240,6 @@ class FacebookClient(HttpClient):
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        """Get active ads for an adset with non-empty insights."""
         ads = await self._fetch_with_pagination(
             f"{adset_id}/ads",
             access_token,

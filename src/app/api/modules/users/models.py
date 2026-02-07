@@ -5,8 +5,6 @@ from app.database.base import Base, DateTimeMixin, UUID7IDMixin
 
 
 class FacebookAuth(Base, UUID7IDMixin, DateTimeMixin):
-    """Shared Facebook long-lived token storage (single row)."""
-
     __tablename__ = "facebook_auth"
 
     long_token: Mapped[str | None] = mapped_column(Text, nullable=True)

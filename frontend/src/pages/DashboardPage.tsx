@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getAdAccounts } from '@/api/facebook';
-import type { AdAccountResponse } from '@/types/facebook';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
 import FacebookConnect from '@/components/ui/FacebookConnect';
-import { Building2, ChevronRight } from 'lucide-react';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { useI18n } from '@/i18n/locale';
 import { useAuthStore } from '@/store/authStore';
+import type { AdAccountResponse } from '@/types/facebook';
 import axios from 'axios';
+import { Building2, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function AccountCard({
   account,
@@ -49,16 +49,14 @@ function AccountCard({
           </span>
         )}
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium ${
-            account.account_status === 1
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium ${account.account_status === 1
               ? 'bg-emerald-50 text-emerald-700'
               : 'bg-brand-gray-100 text-brand-gray-600'
-          }`}
+            }`}
         >
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              account.account_status === 1 ? 'bg-emerald-500' : 'bg-brand-gray-400'
-            }`}
+            className={`w-1.5 h-1.5 rounded-full ${account.account_status === 1 ? 'bg-emerald-500' : 'bg-brand-gray-400'
+              }`}
           />
           {account.account_status === 1 ? t('accountActive') : t('accountInactive')}
         </span>
@@ -148,7 +146,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Single account — centered prominent card
   if (accounts.length === 1) {
     const account = accounts[0];
     return (
@@ -172,7 +169,6 @@ export default function DashboardPage() {
     );
   }
 
-  // Multiple accounts — grid
   return (
     <div>
       <div className="mb-6 sm:mb-8">
