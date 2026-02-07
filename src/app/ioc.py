@@ -64,7 +64,7 @@ class ServicesProvider(Provider):
         return FacebookService(uow, sdk)
 
     @provide(scope=Scope.REQUEST)
-    async def get_telegram_service(
+    def get_telegram_service(
         self, uow: UnitOfWork, config: Config
     ) -> TelegramService:
         return TelegramService(uow, config.telegram)

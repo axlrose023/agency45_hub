@@ -8,11 +8,14 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
 import { ExternalLink, ImageOff } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
+import { resolveFacebookErrorMessage } from '@/utils/apiError';
 
 export default function AdsPage() {
   const { adsetId } = useParams<{ adsetId: string }>();
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [ads, setAds] = useState<AdResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,30 +25,30 @@ export default function AdsPage() {
     setLoading(true);
     getAds(adsetId, dateRange)
       .then(setAds)
-      .catch(() => setError('Failed to load ads'))
+      .catch((error) => setError(resolveFacebookErrorMessage(error, t('adsLoadError'), t)))
       .finally(() => setLoading(false));
-  }, [adsetId, dateRange]);
+  }, [adsetId, dateRange, t]);
 
   if (loading) return <LoadingSpinner size="lg" />;
   if (error) return <div className="text-red-600 text-center py-8">{error}</div>;
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <button
           onClick={() => navigate(-1)}
           className="text-sm text-brand-gray-500 hover:text-brand-black transition-colors font-body mb-2 flex items-center gap-1"
         >
-          &larr; Back to Ad Sets
+          &larr; {t('backToAdSets')}
         </button>
-        <h1 className="text-2xl font-heading font-bold text-brand-black">Ads</h1>
+        <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">{t('adsTitle')}</h1>
         <p className="text-brand-gray-500 text-sm mt-1">
-          Ad Set: {adsetId} &middot; {ads.length} ad{ads.length !== 1 ? 's' : ''}
+          {t('adSetLabel')}: {adsetId} &middot; {ads.length} {t('adsCountLabel')}
         </p>
       </div>
 
       {ads.length === 0 ? (
-        <EmptyState title="No Ads" description="No active ads found for this ad set." />
+        <EmptyState title={t('noAdsTitle')} description={t('noAdsDescription')} />
       ) : (
         <div className="space-y-6">
           {ads.map((ad) => (
@@ -60,7 +63,7 @@ export default function AdsPage() {
                   {ad.creative?.image_url || ad.creative?.thumbnail_url ? (
                     <img
                       src={ad.creative.image_url || ad.creative.thumbnail_url || ''}
-                      alt={ad.creative.title || ad.ad_name || 'Ad creative'}
+                      alt={ad.creative.title || ad.ad_name || t('adCreativeAlt')}
                       className="w-full h-56 sm:h-full object-cover"
                     />
                   ) : (
@@ -71,11 +74,11 @@ export default function AdsPage() {
                 </div>
 
                 {/* Ad info */}
-                <div className="flex-1 p-6">
+                <div className="flex-1 p-4 sm:p-6">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="font-heading font-semibold text-lg text-brand-black">
-                        {ad.ad_name || 'Unnamed Ad'}
+                        {ad.ad_name || t('unnamedAd')}
                       </h3>
                       <p className="text-xs text-brand-gray-500 mt-0.5">ID: {ad.ad_id}</p>
                     </div>
@@ -113,7 +116,7 @@ export default function AdsPage() {
               </div>
 
               {/* Bottom: Insights on full width */}
-              <div className="border-t border-brand-gray-200 p-6 bg-brand-gray-50/50">
+              <div className="border-t border-brand-gray-200 p-4 sm:p-6 bg-brand-gray-50/50">
                 <InsightGrid insights={ad.insights} />
               </div>
             </div>

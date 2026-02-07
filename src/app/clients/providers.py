@@ -6,6 +6,7 @@ from importlib.util import find_spec
 import httpx
 from dishka import Provider, Scope, provide
 
+from app.api.modules.telegram.services.client import TelegramClient
 from app.clients.example_service import ExampleServiceClient
 from app.clients.facebook import FacebookClient
 from app.settings import Config
@@ -86,3 +87,12 @@ class HttpClientsProvider(Provider):
     ) -> FacebookClient:
         """Provide Facebook Graph API client."""
         return FacebookClient(client, config.facebook)
+
+    @provide(scope=Scope.REQUEST)
+    def get_telegram_client(
+        self,
+        client: httpx.AsyncClient,
+        config: Config,
+    ) -> TelegramClient:
+        """Provide Telegram Bot API client."""
+        return TelegramClient(client, config.telegram)

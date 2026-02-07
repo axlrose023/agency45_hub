@@ -1,5 +1,6 @@
 """Telegram service for user connection."""
 
+from typing import Literal
 from uuid import UUID
 
 from app.api.modules.telegram.schema import (
@@ -15,11 +16,13 @@ class TelegramService:
         self.uow = uow
         self.config = config
 
-    async def get_registration_link(self, user_id: UUID) -> TelegramRegisterResponse:
+    async def get_registration_link(
+        self, user_id: UUID, locale: Literal["ua", "ru"] = "ua"
+    ) -> TelegramRegisterResponse:
         """Generate registration link for telegram bot."""
         token = await self.uow.telegram.set_telegram_token(user_id)
         await self.uow.commit()
-        link = f"{self.config.bot_link}?start={token}"
+        link = f"{self.config.bot_link}?start={token}_{locale}"
         return TelegramRegisterResponse(registration_link=link)
 
     async def logout(self, user_id: UUID) -> None:

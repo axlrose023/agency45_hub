@@ -36,4 +36,18 @@
   button, a, [role="button"], select, summary {
     cursor: pointer;
   }
+
+  input[type="date"] {
+    cursor: pointer;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
 }

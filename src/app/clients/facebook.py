@@ -113,7 +113,7 @@ class FacebookClient(HttpClient):
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        """Get active campaigns for an ad account with insights."""
+        """Get active campaigns for an ad account with non-empty insights."""
         campaigns = await self._fetch_with_pagination(
             f"act_{account_id}/campaigns",
             access_token,
@@ -144,11 +144,14 @@ class FacebookClient(HttpClient):
                 },
             )
 
-            insight = {}
-            if insights:
-                insight = dict(insights[0])
-                insight.pop("date_start", None)
-                insight.pop("date_stop", None)
+            if not insights:
+                continue
+
+            insight = dict(insights[0])
+            insight.pop("date_start", None)
+            insight.pop("date_stop", None)
+            if not insight:
+                continue
 
             result.append(
                 {
@@ -156,7 +159,7 @@ class FacebookClient(HttpClient):
                     "campaign_name": campaign.get("name"),
                     "objective": campaign.get("objective"),
                     "status": campaign.get("status"),
-                    "insights": insight or None,
+                    "insights": insight,
                 }
             )
 
@@ -169,7 +172,7 @@ class FacebookClient(HttpClient):
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        """Get active adsets for a campaign with insights."""
+        """Get active adsets for a campaign with non-empty insights."""
         adsets = await self._fetch_with_pagination(
             f"{campaign_id}/adsets",
             access_token,
@@ -200,11 +203,14 @@ class FacebookClient(HttpClient):
                 },
             )
 
-            insight = {}
-            if insights:
-                insight = dict(insights[0])
-                insight.pop("date_start", None)
-                insight.pop("date_stop", None)
+            if not insights:
+                continue
+
+            insight = dict(insights[0])
+            insight.pop("date_start", None)
+            insight.pop("date_stop", None)
+            if not insight:
+                continue
 
             result.append(
                 {
@@ -212,7 +218,7 @@ class FacebookClient(HttpClient):
                     "adset_name": adset.get("name"),
                     "targeting": adset.get("targeting", {}),
                     "status": adset.get("status"),
-                    "insights": insight or None,
+                    "insights": insight,
                 }
             )
 
@@ -224,7 +230,7 @@ class FacebookClient(HttpClient):
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        """Get active ads for an adset with insights."""
+        """Get active ads for an adset with non-empty insights."""
         ads = await self._fetch_with_pagination(
             f"{adset_id}/ads",
             access_token,
@@ -245,11 +251,14 @@ class FacebookClient(HttpClient):
                 },
             )
 
-            insight = {}
-            if insights:
-                insight = dict(insights[0])
-                insight.pop("date_start", None)
-                insight.pop("date_stop", None)
+            if not insights:
+                continue
+
+            insight = dict(insights[0])
+            insight.pop("date_start", None)
+            insight.pop("date_stop", None)
+            if not insight:
+                continue
 
             result.append(
                 {
@@ -257,7 +266,7 @@ class FacebookClient(HttpClient):
                     "ad_name": ad.get("name"),
                     "status": ad.get("status"),
                     "creative": ad.get("creative", {}),
-                    "insights": insight or None,
+                    "insights": insight,
                 }
             )
 

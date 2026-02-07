@@ -8,6 +8,7 @@ import PasswordInput from '@/components/ui/PasswordInput';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
 import { Plus, Search, X, Shield, User } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
 
 export default function UsersPage() {
   const [data, setData] = useState<UsersPaginationResponse | null>(null);
@@ -23,6 +24,7 @@ export default function UsersPage() {
   const [newAdAccountId, setNewAdAccountId] = useState('');
   const [createError, setCreateError] = useState('');
   const [creating, setCreating] = useState(false);
+  const { t } = useI18n();
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -61,24 +63,26 @@ export default function UsersPage() {
       setNewAdAccountId('');
       fetchUsers();
     } catch {
-      setCreateError('Failed to create user');
+      setCreateError(t('createUserFailed'));
     }
     setCreating(false);
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-brand-black">Users</h1>
-          <p className="text-brand-gray-500 text-sm mt-1">Manage users and account assignments</p>
+          <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+            {t('usersTitle')}
+          </h1>
+          <p className="text-brand-gray-500 text-sm mt-1">{t('usersSubtitle')}</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg font-heading font-medium text-sm hover:bg-brand-gray-800 transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg font-heading font-medium text-sm hover:bg-brand-gray-800 transition-colors w-full sm:w-auto"
         >
           <Plus size={18} />
-          Create User
+          {t('createUser')}
         </button>
       </div>
 
@@ -87,7 +91,7 @@ export default function UsersPage() {
         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-gray-400" />
         <input
           type="text"
-          placeholder="Search users..."
+          placeholder={t('searchUsersPlaceholder')}
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -100,24 +104,27 @@ export default function UsersPage() {
       {loading ? (
         <LoadingSpinner />
       ) : !data || data.items.length === 0 ? (
-        <EmptyState title="No Users Found" description="No users match your search criteria." />
+        <EmptyState
+          title={t('noUsersFoundTitle')}
+          description={t('noUsersFoundDescription')}
+        />
       ) : (
         <>
-          <div className="bg-white rounded-xl border border-brand-gray-200 overflow-hidden">
-            <table className="w-full">
+          <div className="bg-white rounded-xl border border-brand-gray-200 overflow-x-auto">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-brand-gray-200 bg-brand-gray-50">
                   <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-brand-gray-500 uppercase tracking-wider">
-                    User
+                    {t('tableUser')}
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-brand-gray-500 uppercase tracking-wider">
-                    Role
+                    {t('tableRole')}
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-brand-gray-500 uppercase tracking-wider">
-                    Ad Account
+                    {t('tableAdAccount')}
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-brand-gray-500 uppercase tracking-wider">
-                    Telegram
+                    {t('tableTelegram')}
                   </th>
                 </tr>
               </thead>
@@ -146,7 +153,7 @@ export default function UsersPage() {
                         }`}
                       >
                         {user.is_admin ? <Shield size={12} /> : <User size={12} />}
-                        {user.is_admin ? 'Admin' : 'User'}
+                        {user.is_admin ? t('roleAdmin') : t('roleUser')}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -167,7 +174,9 @@ export default function UsersPage() {
                             user.telegram_chat_id ? 'bg-emerald-500' : 'bg-brand-gray-400'
                           }`}
                         />
-                        {user.telegram_chat_id ? 'Connected' : 'Not connected'}
+                        {user.telegram_chat_id
+                          ? t('telegramConnected')
+                          : t('telegramNotConnected')}
                       </span>
                     </td>
                   </tr>
@@ -185,7 +194,9 @@ export default function UsersPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowModal(false)} />
           <div className="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-heading font-bold text-lg">Create User</h2>
+              <h2 className="font-heading font-bold text-lg">
+                {t('createUserModalTitle')}
+              </h2>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-brand-gray-400 hover:text-brand-black transition-colors"
@@ -197,37 +208,37 @@ export default function UsersPage() {
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
                 <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
-                  Username
+                  {t('usernameLabel')}
                 </label>
                 <input
                   type="text"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  placeholder="Enter username"
+                  placeholder={t('enterUsername')}
                   className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
-                  Password
+                  {t('passwordLabel')}
                 </label>
                 <PasswordInput
                   value={newPassword}
                   onChange={setNewPassword}
-                  placeholder="Enter password"
+                  placeholder={t('enterPassword')}
                 />
               </div>
               <div>
                 <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
-                  Ad Account
+                  {t('adAccountLabel')}
                 </label>
                 <select
                   value={newAdAccountId}
                   onChange={(e) => setNewAdAccountId(e.target.value)}
                   className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent bg-white"
                 >
-                  <option value="">No account assigned</option>
+                  <option value="">{t('noAccountAssigned')}</option>
                   {adAccounts.map((acc) => (
                     <option key={acc.account_id} value={acc.account_id}>
                       {acc.name || acc.account_id} ({acc.account_id})
@@ -247,7 +258,7 @@ export default function UsersPage() {
                 disabled={creating}
                 className="w-full bg-brand-black text-white font-heading font-semibold py-3 rounded-lg hover:bg-brand-gray-800 transition-colors disabled:opacity-50 text-sm"
               >
-                {creating ? 'Creating...' : 'Create User'}
+                {creating ? t('creatingUser') : t('createUser')}
               </button>
             </form>
           </div>

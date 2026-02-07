@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
 
 interface PasswordInputProps {
   value: string;
@@ -8,8 +9,14 @@ interface PasswordInputProps {
   id?: string;
 }
 
-export default function PasswordInput({ value, onChange, placeholder = 'Password', id }: PasswordInputProps) {
+export default function PasswordInput({
+  value,
+  onChange,
+  placeholder,
+  id,
+}: PasswordInputProps) {
   const [visible, setVisible] = useState(false);
+  const { t } = useI18n();
 
   return (
     <div className="relative">
@@ -18,7 +25,7 @@ export default function PasswordInput({ value, onChange, placeholder = 'Password
         type={visible ? 'text' : 'password'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('passwordLabel')}
         className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent pr-12 transition-colors"
       />
       <button

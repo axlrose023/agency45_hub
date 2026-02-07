@@ -1,38 +1,51 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
-import { LayoutDashboard, Users, User, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { LayoutDashboard, Users, User, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/utils/cn';
+import { useI18n } from '@/i18n/locale';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
-  { to: '/users', label: 'Users', icon: Users, adminOnly: true },
-  { to: '/profile', label: 'Profile', icon: User, adminOnly: false },
-];
+interface SidebarProps {
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const { user, isAdmin } = useAuth();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { t } = useI18n();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    onMobileClose();
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const navItems = [
+    {
+      to: '/dashboard',
+      label: t('navDashboard'),
+      icon: LayoutDashboard,
+      adminOnly: false,
+    },
+    { to: '/users', label: t('navUsers'), icon: Users, adminOnly: true },
+    { to: '/profile', label: t('navProfile'), icon: User, adminOnly: false },
+  ];
 
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
   };
 
-  return (
-    <aside
-      className={cn(
-        'bg-brand-black text-white flex flex-col min-h-screen sticky top-0 transition-all duration-300',
-        collapsed ? 'w-[72px]' : 'w-64',
-      )}
-    >
-      {/* Logo - clickable to dashboard */}
+  const sidebarContent = (
+    <>
+      {/* Logo */}
       <button
         onClick={() => navigate('/dashboard')}
-        className="p-4 flex items-center gap-3 border-b border-brand-gray-800 hover:bg-white/5 transition-colors"
+        className="h-[72px] px-4 flex items-center gap-3 border-b border-brand-gray-800 hover:bg-white/5 transition-colors"
       >
         <img src="/agency45.png" alt="Agency45" className="w-10 h-10 rounded-full flex-shrink-0" />
         {!collapsed && (
@@ -65,10 +78,10 @@ export default function Sidebar() {
 
       {/* Bottom section */}
       <div className="border-t border-brand-gray-800">
-        {/* Collapse toggle */}
+        {/* Collapse toggle — desktop only */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center justify-center w-full py-3 text-brand-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+          className="hidden lg:flex items-center justify-center w-full py-3 text-brand-gray-500 hover:text-white hover:bg-white/5 transition-colors"
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
@@ -84,14 +97,16 @@ export default function Sidebar() {
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user?.username}</p>
-                <p className="text-xs text-brand-gray-500">{isAdmin ? 'Admin' : 'User'}</p>
+                <p className="text-xs text-brand-gray-500">
+                  {isAdmin ? t('roleAdmin') : t('roleUser')}
+                </p>
               </div>
             )}
             {!collapsed && (
               <button
                 onClick={handleLogout}
                 className="text-brand-gray-500 hover:text-white transition-colors flex-shrink-0"
-                title="Logout"
+                title={t('logout')}
               >
                 <LogOut size={18} />
               </button>
@@ -99,6 +114,37 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          'bg-brand-black text-white flex-col min-h-screen sticky top-0 transition-all duration-300 hidden lg:flex',
+          collapsed ? 'w-[72px]' : 'w-64',
+        )}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay + drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={onMobileClose} />
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-brand-black text-white flex flex-col z-50">
+            {/* Close button */}
+            <button
+              onClick={onMobileClose}
+              className="absolute top-5 right-3 text-brand-gray-400 hover:text-white transition-colors z-10"
+            >
+              <X size={20} />
+            </button>
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

@@ -1,8 +1,12 @@
 import apiClient from './client';
 import type { TelegramRegisterResponse, TelegramChatIdResponse } from '@/types/telegram';
 
-export async function getRegistrationLink(): Promise<TelegramRegisterResponse> {
-  const response = await apiClient.get<TelegramRegisterResponse>('/telegram/register');
+export async function getRegistrationLink(
+  locale: 'ua' | 'ru' = 'ua',
+): Promise<TelegramRegisterResponse> {
+  const response = await apiClient.get<TelegramRegisterResponse>('/telegram/register', {
+    params: { locale },
+  });
   return response.data;
 }
 

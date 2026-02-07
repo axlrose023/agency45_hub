@@ -5,6 +5,8 @@ import { getUserById } from '@/api/users';
 import { useAuthStore } from '@/store/authStore';
 import PasswordInput from '@/components/ui/PasswordInput';
 import { jwtDecode } from 'jwt-decode';
+import { useI18n } from '@/i18n/locale';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -13,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { setTokens, setUser } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +32,7 @@ export default function LoginPage() {
 
       navigate('/dashboard', { replace: true });
     } catch {
-      setError('Invalid username or password');
+      setError(t('loginInvalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -38,6 +41,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-gray-50 px-4">
       <div className="w-full max-w-md">
+        <div className="flex justify-end mb-3">
+          <LanguageSwitcher />
+        </div>
         <div className="bg-white rounded-2xl shadow-sm border border-brand-gray-200 p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
@@ -45,20 +51,20 @@ export default function LoginPage() {
             <h1 className="font-heading font-bold text-2xl tracking-tight text-brand-black">
               Agency45
             </h1>
-            <p className="text-brand-gray-500 text-sm mt-1">Sign in to your account</p>
+            <p className="text-brand-gray-500 text-sm mt-1">{t('loginSubtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
-                Username
+                {t('loginUsername')}
               </label>
               <input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                placeholder={t('loginEnterUsername')}
                 className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 font-body text-sm focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent transition-colors"
                 required
               />
@@ -66,13 +72,13 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
-                Password
+                {t('loginPassword')}
               </label>
               <PasswordInput
                 id="password"
                 value={password}
                 onChange={setPassword}
-                placeholder="Enter your password"
+                placeholder={t('loginEnterPassword')}
               />
             </div>
 
@@ -87,13 +93,13 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-brand-black text-white font-heading font-semibold py-3 rounded-lg hover:bg-brand-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wider"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('loginSigningIn') : t('loginSignIn')}
             </button>
           </form>
         </div>
 
         <p className="text-center text-brand-gray-400 text-xs mt-6">
-          Agency45 Hub &mdash; Ad Management Platform
+          Agency45 Hub &mdash; {t('loginFooter')}
         </p>
       </div>
     </div>

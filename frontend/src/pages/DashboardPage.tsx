@@ -5,8 +5,17 @@ import type { AdAccountResponse } from '@/types/facebook';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
 import { Building2, ChevronRight } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
 
-function AccountCard({ account, onClick }: { account: AdAccountResponse; onClick: () => void }) {
+function AccountCard({
+  account,
+  onClick,
+  t,
+}: {
+  account: AdAccountResponse;
+  onClick: () => void;
+  t: (key: string) => string;
+}) {
   return (
     <button
       onClick={onClick}
@@ -19,7 +28,7 @@ function AccountCard({ account, onClick }: { account: AdAccountResponse; onClick
           </div>
           <div>
             <h3 className="font-heading font-semibold text-brand-black">
-              {account.name || 'Unnamed Account'}
+              {account.name || t('accountUnnamed')}
             </h3>
             <p className="text-xs text-brand-gray-500 mt-0.5">ID: {account.account_id}</p>
           </div>
@@ -48,7 +57,7 @@ function AccountCard({ account, onClick }: { account: AdAccountResponse; onClick
               account.account_status === 1 ? 'bg-emerald-500' : 'bg-brand-gray-400'
             }`}
           />
-          {account.account_status === 1 ? 'Active' : 'Inactive'}
+          {account.account_status === 1 ? t('accountActive') : t('accountInactive')}
         </span>
       </div>
     </button>
@@ -60,13 +69,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   useEffect(() => {
     getAdAccounts()
       .then(setAccounts)
-      .catch(() => setError('Failed to load ad accounts'))
+      .catch(() => setError(t('dashboardLoadAccountsError')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   if (loading) return <LoadingSpinner size="lg" />;
   if (error) return <div className="text-red-600 text-center py-8">{error}</div>;
@@ -74,12 +84,14 @@ export default function DashboardPage() {
   if (accounts.length === 0) {
     return (
       <div>
-        <div className="mb-8">
-          <h1 className="text-2xl font-heading font-bold text-brand-black">Ad Accounts</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+            {t('dashboardAdAccounts')}
+          </h1>
         </div>
         <EmptyState
-          title="No Ad Accounts"
-          description="No ad accounts are available. Contact your administrator."
+          title={t('dashboardNoAccountsTitle')}
+          description={t('dashboardNoAccountsDescription')}
         />
       </div>
     );
@@ -90,16 +102,19 @@ export default function DashboardPage() {
     const account = accounts[0];
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-heading font-bold text-brand-black">Your Ad Account</h1>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+            {t('dashboardYourAdAccount')}
+          </h1>
           <p className="text-brand-gray-500 text-sm mt-1">
-            Click to view campaign performance
+            {t('dashboardClickPerformance')}
           </p>
         </div>
         <div className="w-full max-w-md">
           <AccountCard
             account={account}
             onClick={() => navigate(`/accounts/${account.account_id}`)}
+            t={t}
           />
         </div>
       </div>
@@ -109,10 +124,12 @@ export default function DashboardPage() {
   // Multiple accounts — grid
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-heading font-bold text-brand-black">Ad Accounts</h1>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+          {t('dashboardAdAccounts')}
+        </h1>
         <p className="text-brand-gray-500 text-sm mt-1">
-          Select an account to view campaign performance
+          {t('dashboardSelectAccountPerformance')}
         </p>
       </div>
 
@@ -122,6 +139,7 @@ export default function DashboardPage() {
             key={account.account_id}
             account={account}
             onClick={() => navigate(`/accounts/${account.account_id}`)}
+            t={t}
           />
         ))}
       </div>

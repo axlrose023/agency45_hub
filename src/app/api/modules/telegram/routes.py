@@ -1,5 +1,7 @@
 """Telegram API routes."""
 
+from typing import Literal
+
 from dishka import FromDishka
 from dishka.integrations.fastapi import DishkaRoute
 from fastapi import APIRouter, Depends
@@ -19,9 +21,10 @@ router = APIRouter(route_class=DishkaRoute)
 async def get_registration_link(
     service: FromDishka[TelegramService],
     current_user: User = Depends(AuthenticateUser()),
+    locale: Literal["ua", "ru"] = "ua",
 ) -> TelegramRegisterResponse:
     """Get telegram bot registration link with unique token."""
-    return await service.get_registration_link(current_user.id)
+    return await service.get_registration_link(current_user.id, locale)
 
 
 @router.delete("/logout", status_code=204)

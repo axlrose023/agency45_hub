@@ -1,3 +1,5 @@
+import { useI18n } from '@/i18n/locale';
+
 interface ConfirmDialogProps {
   open: boolean;
   title: string;
@@ -14,9 +16,11 @@ export default function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
-  confirmLabel = 'Confirm',
+  confirmLabel,
   danger = false,
 }: ConfirmDialogProps) {
+  const { t } = useI18n();
+
   if (!open) return null;
 
   return (
@@ -30,7 +34,7 @@ export default function ConfirmDialog({
             onClick={onCancel}
             className="px-4 py-2 text-sm font-heading font-medium border border-brand-gray-300 rounded-lg hover:bg-brand-gray-50 transition-colors"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -38,7 +42,7 @@ export default function ConfirmDialog({
               danger ? 'bg-red-600 hover:bg-red-700' : 'bg-brand-black hover:bg-brand-gray-800'
             }`}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('confirm')}
           </button>
         </div>
       </div>

@@ -5,11 +5,13 @@ import { useAuthStore } from '@/store/authStore';
 import { getRegistrationLink, telegramLogout, getChatId } from '@/api/telegram';
 import { getAdAccounts } from '@/api/facebook';
 import { Shield, User, Building2, MessageCircle, Unlink, LogOut, Send, RefreshCw, ExternalLink } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [telegramConnected, setTelegramConnected] = useState<boolean>(false);
   const [chatId, setChatId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -72,13 +74,13 @@ export default function ProfilePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await getRegistrationLink();
+      const data = await getRegistrationLink(locale === 'ru' ? 'ru' : 'ua');
       setBotLink(data.registration_link);
       setWaitingForBot(true);
       // Auto-open in new tab
       window.open(data.registration_link, '_blank');
     } catch {
-      setError('Failed to generate registration link. Please try again.');
+      setError(t('registrationLinkFailed'));
     }
     setLoading(false);
   };
@@ -106,21 +108,23 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-heading font-bold text-brand-black">Profile</h1>
-        <p className="text-brand-gray-500 text-sm mt-1">Your account information</p>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+          {t('profileTitle')}
+        </h1>
+        <p className="text-brand-gray-500 text-sm mt-1">{t('profileSubtitle')}</p>
       </div>
 
       {/* User Info Card */}
-      <div className="bg-white rounded-xl border border-brand-gray-200 p-6 mb-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-full bg-brand-gray-200 flex items-center justify-center">
-            <span className="text-2xl font-heading font-bold text-brand-gray-600">
+      <div className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 sm:gap-4 mb-6">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-brand-gray-200 flex items-center justify-center">
+            <span className="text-xl sm:text-2xl font-heading font-bold text-brand-gray-600">
               {user.username.charAt(0).toUpperCase()}
             </span>
           </div>
           <div>
-            <h2 className="text-xl font-heading font-bold text-brand-black">{user.username}</h2>
+            <h2 className="text-lg sm:text-xl font-heading font-bold text-brand-black">{user.username}</h2>
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium mt-1 ${
                 user.is_admin
@@ -129,7 +133,7 @@ export default function ProfilePage() {
               }`}
             >
               {user.is_admin ? <Shield size={12} /> : <User size={12} />}
-              {user.is_admin ? 'Administrator' : 'User'}
+              {user.is_admin ? t('profileRoleAdmin') : t('profileRoleUser')}
             </span>
           </div>
         </div>
@@ -139,7 +143,7 @@ export default function ProfilePage() {
             <Building2 size={18} className="text-brand-gray-400 flex-shrink-0" />
             <div>
               <p className="text-xs text-brand-gray-500 font-heading uppercase tracking-wider">
-                Ad Account
+                {t('adAccountLabel')}
               </p>
               {user.ad_account_id ? (
                 <div>
@@ -151,7 +155,7 @@ export default function ProfilePage() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-brand-gray-400">No account assigned</p>
+                <p className="text-sm text-brand-gray-400">{t('noAccountAssigned')}</p>
               )}
             </div>
           </div>
@@ -159,19 +163,25 @@ export default function ProfilePage() {
       </div>
 
       {/* Telegram Card */}
-      <div className="bg-white rounded-xl border border-brand-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
         <div className="flex items-center gap-3 mb-4">
           <MessageCircle size={20} className="text-brand-gray-600" />
-          <h3 className="font-heading font-semibold text-brand-black">Telegram Integration</h3>
+          <h3 className="font-heading font-semibold text-brand-black">
+            {t('telegramIntegrationTitle')}
+          </h3>
         </div>
 
         {telegramConnected ? (
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-sm text-emerald-700 font-medium">Connected</span>
+              <span className="text-sm text-emerald-700 font-medium">
+                {t('connected')}
+              </span>
               {chatId && (
-                <span className="text-xs text-brand-gray-400 ml-2">Chat ID: {chatId}</span>
+                <span className="text-xs text-brand-gray-400 ml-2">
+                  {t('chatIdLabel')}: {chatId}
+                </span>
               )}
             </div>
             <button
@@ -180,7 +190,7 @@ export default function ProfilePage() {
               className="flex items-center gap-2 px-4 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-heading font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
             >
               <Unlink size={16} />
-              Disconnect Telegram
+              {t('disconnectTelegram')}
             </button>
           </div>
         ) : waitingForBot ? (
@@ -189,15 +199,15 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <span className="text-sm text-amber-800 font-medium">
-                  Waiting for Telegram connection...
+                  {t('waitingTelegramConnection')}
                 </span>
               </div>
               <p className="text-xs text-amber-700">
-                A Telegram window should have opened. Press <strong>Start</strong> in the bot to complete the connection. This page will update automatically.
+                {t('waitingTelegramDescription')}
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {botLink && (
                 <a
                   href={botLink}
@@ -206,7 +216,7 @@ export default function ProfilePage() {
                   className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-800 transition-colors"
                 >
                   <ExternalLink size={16} />
-                  Open Telegram Again
+                  {t('openTelegramAgain')}
                 </a>
               )}
               <button
@@ -215,14 +225,14 @@ export default function ProfilePage() {
                 className="flex items-center gap-2 px-4 py-2.5 border border-brand-gray-300 rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-50 transition-colors disabled:opacity-50"
               >
                 <RefreshCw size={16} className={checking ? 'animate-spin' : ''} />
-                Check Status
+                {t('checkStatus')}
               </button>
             </div>
           </div>
         ) : (
           <div>
             <p className="text-sm text-brand-gray-600 mb-4">
-              Connect your Telegram account to receive notifications.
+              {t('connectTelegramDescription')}
             </p>
 
             {error && (
@@ -237,20 +247,20 @@ export default function ProfilePage() {
               className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white rounded-lg text-sm font-heading font-medium hover:bg-brand-gray-800 transition-colors disabled:opacity-50"
             >
               <Send size={16} />
-              {loading ? 'Connecting...' : 'Connect Telegram'}
+              {loading ? t('connecting') : t('connectTelegram')}
             </button>
           </div>
         )}
       </div>
 
       {/* Logout */}
-      <div className="bg-white rounded-xl border border-brand-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6">
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 px-4 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-heading font-medium hover:bg-red-50 transition-colors"
         >
           <LogOut size={16} />
-          Sign Out
+          {t('signOut')}
         </button>
       </div>
     </div>

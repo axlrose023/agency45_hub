@@ -8,11 +8,14 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
 import { ChevronRight } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
+import { resolveFacebookErrorMessage } from '@/utils/apiError';
 
 export default function CampaignGroupPage() {
   const { accountId, objective } = useParams<{ accountId: string; objective: string }>();
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [campaigns, setCampaigns] = useState<CampaignResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,9 +25,9 @@ export default function CampaignGroupPage() {
     setLoading(true);
     getCampaigns(accountId, dateRange)
       .then((all) => setCampaigns(all.filter((c) => (c.objective || 'UNKNOWN') === objective)))
-      .catch(() => setError('Failed to load campaigns'))
+      .catch((error) => setError(resolveFacebookErrorMessage(error, t('adAccountLoadCampaignsError'), t)))
       .finally(() => setLoading(false));
-  }, [accountId, dateRange, objective]);
+  }, [accountId, dateRange, objective, t]);
 
   const objectiveLabel = (objective || 'UNKNOWN')
     .replace(/^OUTCOME_/, '')
@@ -38,29 +41,32 @@ export default function CampaignGroupPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <button
           onClick={() => navigate(`/accounts/${accountId}`)}
           className="text-sm text-brand-gray-500 hover:text-brand-black transition-colors font-body mb-2 flex items-center gap-1"
         >
-          &larr; Back to Objectives
+          &larr; {t('backToObjectives')}
         </button>
-        <h1 className="text-2xl font-heading font-bold text-brand-black">
-          {objectiveLabel} Campaigns
+        <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+          {objectiveLabel} {t('campaignsTitleSuffix')}
         </h1>
         <p className="text-brand-gray-500 text-sm mt-1">
-          {campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}
+          {campaigns.length} {t('campaignsCountLabel')}
         </p>
       </div>
 
       {campaigns.length === 0 ? (
-        <EmptyState title="No Campaigns" description="No campaigns found for this objective." />
+        <EmptyState
+          title={t('noCampaignsTitle')}
+          description={t('noCampaignsDescription')}
+        />
       ) : (
         <div className="space-y-4">
           {campaigns.map((campaign) => (
             <div
               key={campaign.campaign_id}
-              className="bg-white rounded-xl border border-brand-gray-200 p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
+              className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
             >
               <button
                 onClick={() =>
@@ -70,7 +76,7 @@ export default function CampaignGroupPage() {
               >
                 <div>
                   <h3 className="font-heading font-semibold text-brand-black">
-                    {campaign.campaign_name || 'Unnamed Campaign'}
+                    {campaign.campaign_name || t('unnamedCampaign')}
                   </h3>
                   <p className="text-xs text-brand-gray-500 mt-0.5">
                     ID: {campaign.campaign_id}

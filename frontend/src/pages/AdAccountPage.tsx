@@ -8,6 +8,8 @@ import InsightGrid from '@/components/ui/InsightGrid';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
 import { ChevronRight, Target, ShoppingCart, Eye, MessageSquare, Video, Megaphone, Zap, BarChart3 } from 'lucide-react';
+import { useI18n } from '@/i18n/locale';
+import { resolveFacebookErrorMessage } from '@/utils/apiError';
 
 const objectiveIcons: Record<string, React.ReactNode> = {
   OUTCOME_TRAFFIC: <Zap size={22} />,
@@ -39,6 +41,7 @@ export default function AdAccountPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [groups, setGroups] = useState<ObjectiveGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -48,41 +51,41 @@ export default function AdAccountPage() {
     setLoading(true);
     getCampaigns(accountId, dateRange)
       .then((campaigns) => setGroups(groupCampaignsByObjective(campaigns)))
-      .catch(() => setError('Failed to load campaigns'))
+      .catch((error) => setError(resolveFacebookErrorMessage(error, t('adAccountLoadCampaignsError'), t)))
       .finally(() => setLoading(false));
-  }, [accountId, dateRange]);
+  }, [accountId, dateRange, t]);
 
   if (loading) return <LoadingSpinner size="lg" />;
   if (error) return <div className="text-red-600 text-center py-8">{error}</div>;
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <button
           onClick={() => navigate('/dashboard')}
           className="text-sm text-brand-gray-500 hover:text-brand-black transition-colors font-body mb-2 flex items-center gap-1"
         >
-          &larr; Back to Accounts
+          &larr; {t('backToAccounts')}
         </button>
-        <h1 className="text-2xl font-heading font-bold text-brand-black">
-          Campaigns by Objective
+        <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
+          {t('campaignsByObjective')}
         </h1>
         <p className="text-brand-gray-500 text-sm mt-1">
-          Account: {accountId}
+          {t('accountLabel')}: {accountId}
         </p>
       </div>
 
       {groups.length === 0 ? (
         <EmptyState
-          title="No Active Campaigns"
-          description="There are no active campaigns in this ad account for the selected date range."
+          title={t('noActiveCampaignsTitle')}
+          description={t('noActiveCampaignsDescription')}
         />
       ) : (
         <div className="space-y-4">
           {groups.map((group) => (
             <div
               key={group.objective}
-              className="bg-white rounded-xl border border-brand-gray-200 p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
+              className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
             >
               <button
                 onClick={() =>
@@ -99,7 +102,7 @@ export default function AdAccountPage() {
                       {formatObjectiveName(group.objective)}
                     </h3>
                     <p className="text-xs text-brand-gray-500 mt-0.5">
-                      {group.campaigns.length} campaign{group.campaigns.length !== 1 ? 's' : ''}
+                      {group.campaigns.length} {t('campaignsCountLabel')}
                     </p>
                   </div>
                 </div>
