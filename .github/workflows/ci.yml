@@ -26,14 +26,17 @@ jobs:
       uses: astral-sh/setup-uv@v2
 
     - name: Install dependencies
+      working-directory: backend
       run: uv sync --dev
 
     - name: Run tests with coverage
+      working-directory: backend
       run: |
         uv run pytest src/tests/ -n auto --cov=src/app --cov-report=html --cov-report=term
 
     - name: Extract coverage percentage
       id: coverage
+      working-directory: backend
       run: |
         COVERAGE=$(uv run coverage report --show-missing | grep TOTAL | awk '{print $NF}' | sed 's/%//')
         echo "COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
@@ -53,4 +56,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-html
-        path: htmlcov/
+        path: backend/htmlcov/
