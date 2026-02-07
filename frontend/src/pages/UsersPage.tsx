@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
-import { getUsers, createUser } from '@/api/users';
+import { getUsers, createUser, updateUser } from '@/api/users';
 import { getAdAccounts } from '@/api/facebook';
-import type { UserResponse, UsersPaginationResponse } from '@/types/user';
+import type { UserResponse, UsersPaginationResponse, UsersPaginationParams } from '@/types/user';
 import type { AdAccountResponse } from '@/types/facebook';
 import Pagination from '@/components/ui/Pagination';
 import PasswordInput from '@/components/ui/PasswordInput';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
-import { Plus, Search, X, Shield, User } from 'lucide-react';
+import { Plus, Search, X, Shield, User, SquarePen } from 'lucide-react';
 import { useI18n } from '@/i18n/locale';
 
 export default function UsersPage() {
@@ -16,6 +16,8 @@ export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [adAccounts, setAdAccounts] = useState<AdAccountResponse[]>([]);
 
   // Create user form
@@ -24,14 +26,17 @@ export default function UsersPage() {
   const [newAdAccountId, setNewAdAccountId] = useState('');
   const [createError, setCreateError] = useState('');
   const [creating, setCreating] = useState(false);
+  const [editAdAccountId, setEditAdAccountId] = useState('');
+  const [updateError, setUpdateError] = useState('');
+  const [updating, setUpdating] = useState(false);
   const { t } = useI18n();
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, unknown> = { page, page_size: 10 };
+      const params: UsersPaginationParams = { page, page_size: 10 };
       if (search) params.username__search = search;
-      const result = await getUsers(params as any);
+      const result = await getUsers(params);
       setData(result);
     } catch {
       // ignore
@@ -66,6 +71,31 @@ export default function UsersPage() {
       setCreateError(t('createUserFailed'));
     }
     setCreating(false);
+  };
+
+  const openEditModal = (user: UserResponse) => {
+    setEditingUser(user);
+    setEditAdAccountId(user.ad_account_id || '');
+    setUpdateError('');
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setUpdateError('');
+    setUpdating(true);
+    try {
+      await updateUser(editingUser.id, { ad_account_id: editAdAccountId || null });
+      setShowEditModal(false);
+      setEditingUser(null);
+      setEditAdAccountId('');
+      fetchUsers();
+    } catch {
+      setUpdateError(t('updateUserFailed'));
+    }
+    setUpdating(false);
   };
 
   return (
@@ -126,6 +156,9 @@ export default function UsersPage() {
                   <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-brand-gray-500 uppercase tracking-wider">
                     {t('tableTelegram')}
                   </th>
+                  <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-brand-gray-500 uppercase tracking-wider">
+                    {t('tableActions')}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-gray-100">
@@ -178,6 +211,16 @@ export default function UsersPage() {
                           ? t('telegramConnected')
                           : t('telegramNotConnected')}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(user)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-heading font-medium border border-brand-gray-300 text-brand-gray-700 hover:bg-brand-gray-50 transition-colors"
+                      >
+                        <SquarePen size={12} />
+                        {t('editUser')}
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -259,6 +302,78 @@ export default function UsersPage() {
                 className="w-full bg-brand-black text-white font-heading font-semibold py-3 rounded-lg hover:bg-brand-gray-800 transition-colors disabled:opacity-50 text-sm"
               >
                 {creating ? t('creatingUser') : t('createUser')}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => {
+              setShowEditModal(false);
+              setEditingUser(null);
+            }}
+          />
+          <div className="relative bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading font-bold text-lg">
+                {t('editUserModalTitle')}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingUser(null);
+                }}
+                className="text-brand-gray-400 hover:text-brand-black transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
+                  {t('usernameLabel')}
+                </label>
+                <div className="w-full border border-brand-gray-200 rounded-lg px-4 py-3 text-sm font-body text-brand-gray-500 bg-brand-gray-50">
+                  {editingUser.username}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
+                  {t('adAccountLabel')}
+                </label>
+                <select
+                  value={editAdAccountId}
+                  onChange={(e) => setEditAdAccountId(e.target.value)}
+                  className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent bg-white"
+                >
+                  <option value="">{t('noAccountAssigned')}</option>
+                  {adAccounts.map((acc) => (
+                    <option key={acc.account_id} value={acc.account_id}>
+                      {acc.name || acc.account_id} ({acc.account_id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {updateError && (
+                <div className="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3 border border-red-200">
+                  {updateError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={updating}
+                className="w-full bg-brand-black text-white font-heading font-semibold py-3 rounded-lg hover:bg-brand-gray-800 transition-colors disabled:opacity-50 text-sm"
+              >
+                {updating ? t('updatingUser') : t('saveChanges')}
               </button>
             </form>
           </div>

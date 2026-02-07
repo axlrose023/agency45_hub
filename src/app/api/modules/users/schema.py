@@ -33,3 +33,12 @@ class CreateUserRequest(BaseModel):
     ad_account_id: str | None = Field(None, description="Facebook Ad Account ID to assign")
 
     model_config = ConfigDict(extra="forbid")
+
+
+class UpdateUserRequest(BaseModel):
+    ad_account_id: str | None = Field(
+        ...,
+        description="Facebook Ad Account ID to assign. Use null to unassign.",
+    )
+
+    model_config = ConfigDict(extra="forbid")

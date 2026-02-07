@@ -9,6 +9,7 @@ from app.api.modules.auth.services.auth import AdminRequired, AuthenticateUser
 from app.api.modules.users.models import User
 from app.api.modules.users.schema import (
     CreateUserRequest,
+    UpdateUserRequest,
     UserResponse,
     UsersPaginationParams,
     UsersPaginationResponse,
@@ -26,6 +27,17 @@ async def create_user(
 ) -> UserResponse:
     """Create a new user (admin only)."""
     return await service.create_user(request)
+
+
+@router.patch("/{user_id}", response_model=UserResponse)
+async def update_user(
+    user_id: UUID,
+    request: UpdateUserRequest,
+    service: FromDishka[UserService],
+    current_user: User = Depends(AdminRequired()),
+) -> UserResponse:
+    """Update an existing user (admin only)."""
+    return await service.update_user(user_id, request)
 
 
 @router.get("", response_model=UsersPaginationResponse)

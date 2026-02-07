@@ -7,6 +7,7 @@ from app.api.modules.auth.service import AuthService
 from app.api.modules.users.models import User
 from app.api.modules.users.schema import (
     CreateUserRequest,
+    UpdateUserRequest,
     UsersPaginationParams,
     UsersPaginationResponse,
 )
@@ -60,4 +61,14 @@ class UserService:
         )
         await self.uow.users.create(user)
         await self.uow.commit()
+        return user
+
+    async def update_user(self, user_id: UUID, request: UpdateUserRequest) -> User:
+        user = await self.uow.users.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user.ad_account_id = request.ad_account_id
+        await self.uow.commit()
+        await self.uow.refresh(user)
         return user

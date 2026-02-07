@@ -14,6 +14,10 @@ export interface CreateUserRequest {
   ad_account_id?: string | null;
 }
 
+export interface UpdateUserRequest {
+  ad_account_id: string | null;
+}
+
 export interface UsersPaginationResponse {
   items: UserResponse[];
   total: number;
