@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from typing import Any
@@ -134,33 +135,33 @@ class FacebookClient(HttpClient):
             },
         )
 
+        if not campaigns:
+            return []
+
+        all_insights = await self._fetch_with_pagination(
+            f"act_{account_id}/insights",
+            access_token,
+            params={
+                "time_range": json.dumps(time_range),
+                "level": "campaign",
+                "fields": f"campaign_id,{self.config.campaign_insight_fields}",
+            },
+        )
+
+        insights_by_campaign: dict[str, dict[str, Any]] = {}
+        for insight in all_insights:
+            campaign_id = insight.get("campaign_id")
+            if campaign_id:
+                cleaned = dict(insight)
+                cleaned.pop("date_start", None)
+                cleaned.pop("date_stop", None)
+                cleaned.pop("campaign_id", None)
+                if cleaned:
+                    insights_by_campaign[campaign_id] = cleaned
+
         result = []
         for campaign in campaigns:
-            insights = await self._fetch_with_pagination(
-                f"act_{account_id}/insights",
-                access_token,
-                params={
-                    "time_range": json.dumps(time_range),
-                    "level": "campaign",
-                    "fields": self.config.campaign_insight_fields,
-                    "filtering": json.dumps(
-                        [
-                            {
-                                "field": "campaign.id",
-                                "operator": "EQUAL",
-                                "value": campaign["id"],
-                            }
-                        ]
-                    ),
-                },
-            )
-
-            if not insights:
-                continue
-
-            insight = dict(insights[0])
-            insight.pop("date_start", None)
-            insight.pop("date_stop", None)
+            insight = insights_by_campaign.get(campaign["id"])
             if not insight:
                 continue
 
@@ -192,33 +193,42 @@ class FacebookClient(HttpClient):
             },
         )
 
+        if not adsets:
+            return []
+
+        all_insights = await self._fetch_with_pagination(
+            f"act_{account_id}/insights",
+            access_token,
+            params={
+                "time_range": json.dumps(time_range),
+                "level": "adset",
+                "fields": f"adset_id,{self.config.ad_insight_fields}",
+                "filtering": json.dumps(
+                    [
+                        {
+                            "field": "campaign.id",
+                            "operator": "EQUAL",
+                            "value": campaign_id,
+                        }
+                    ]
+                ),
+            },
+        )
+
+        insights_by_adset: dict[str, dict[str, Any]] = {}
+        for insight in all_insights:
+            adset_id = insight.get("adset_id")
+            if adset_id:
+                cleaned = dict(insight)
+                cleaned.pop("date_start", None)
+                cleaned.pop("date_stop", None)
+                cleaned.pop("adset_id", None)
+                if cleaned:
+                    insights_by_adset[adset_id] = cleaned
+
         result = []
         for adset in adsets:
-            insights = await self._fetch_with_pagination(
-                f"act_{account_id}/insights",
-                access_token,
-                params={
-                    "time_range": json.dumps(time_range),
-                    "level": "adset",
-                    "fields": self.config.ad_insight_fields,
-                    "filtering": json.dumps(
-                        [
-                            {
-                                "field": "adset.id",
-                                "operator": "EQUAL",
-                                "value": adset["id"],
-                            }
-                        ]
-                    ),
-                },
-            )
-
-            if not insights:
-                continue
-
-            insight = dict(insights[0])
-            insight.pop("date_start", None)
-            insight.pop("date_stop", None)
+            insight = insights_by_adset.get(adset["id"])
             if not insight:
                 continue
 
@@ -249,34 +259,38 @@ class FacebookClient(HttpClient):
             },
         )
 
-        result = []
-        for ad in ads:
-            insights = await self._fetch_with_pagination(
-                f"{ad['id']}/insights",
-                access_token,
-                params={
-                    "fields": self.config.ad_insight_fields,
-                    "time_range": json.dumps(time_range),
-                },
-            )
+        if not ads:
+            return []
+
+        semaphore = asyncio.Semaphore(5)
+
+        async def fetch_ad_insight(ad: dict[str, Any]) -> dict[str, Any] | None:
+            async with semaphore:
+                insights = await self._fetch_with_pagination(
+                    f"{ad['id']}/insights",
+                    access_token,
+                    params={
+                        "fields": self.config.ad_insight_fields,
+                        "time_range": json.dumps(time_range),
+                    },
+                )
 
             if not insights:
-                continue
+                return None
 
             insight = dict(insights[0])
             insight.pop("date_start", None)
             insight.pop("date_stop", None)
             if not insight:
-                continue
+                return None
 
-            result.append(
-                {
-                    "ad_id": ad["id"],
-                    "ad_name": ad.get("name"),
-                    "status": ad.get("status"),
-                    "creative": ad.get("creative", {}),
-                    "insights": insight,
-                }
-            )
+            return {
+                "ad_id": ad["id"],
+                "ad_name": ad.get("name"),
+                "status": ad.get("status"),
+                "creative": ad.get("creative", {}),
+                "insights": insight,
+            }
 
-        return result
+        results = await asyncio.gather(*[fetch_ad_insight(ad) for ad in ads])
+        return [r for r in results if r is not None]
