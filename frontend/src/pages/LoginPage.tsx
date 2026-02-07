@@ -6,7 +6,6 @@ import { useAuthStore } from '@/store/authStore';
 import PasswordInput from '@/components/ui/PasswordInput';
 import { jwtDecode } from 'jwt-decode';
 import { useI18n } from '@/i18n/locale';
-import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -41,9 +40,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-brand-gray-50 px-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-end mb-3">
-          <LanguageSwitcher />
-        </div>
         <div className="bg-white rounded-2xl shadow-sm border border-brand-gray-200 p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">

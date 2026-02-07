@@ -74,6 +74,31 @@ class FacebookClient(HttpClient):
 
         return items
 
+    async def exchange_code(
+        self, code: str, redirect_uri: str
+    ) -> dict[str, Any]:
+        """Exchange OAuth authorization code for an access token."""
+        response = await self.get(
+            "/oauth/access_token",
+            params={
+                "client_id": self.config.app_id,
+                "client_secret": self.config.app_secret,
+                "redirect_uri": redirect_uri,
+                "code": code,
+            },
+        )
+        data = response.json()
+
+        if "error" in data:
+            error = data["error"]
+            raise FacebookAPIError(
+                message=error.get("message", str(error)),
+                error_code=error.get("code"),
+                response_body=data,
+            )
+
+        return data
+
     async def exchange_token(self, short_lived_token: str) -> dict[str, Any]:
         """Exchange short-lived token for long-lived token."""
         response = await self.get(

@@ -91,21 +91,24 @@ def downgrade(revision: str = "-1") -> None:
 def create_user(
     username: Annotated[str, typer.Option(prompt=True)] = None,
     password: Annotated[str, typer.Option(prompt=True, hide_input=True)] = None,
+    is_admin: Annotated[bool, typer.Option("--admin")] = False,
 ) -> None:
     """Create a new user."""
 
     async def _create_user():
-        from passlib.context import CryptContext
+        import bcrypt
 
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         container = get_async_container()
         async with container() as request_container:
             uow = await request_container.get(UnitOfWork)
-            hashed_password = pwd_context.hash(password)
+            hashed_password = bcrypt.hashpw(
+                password.encode("utf-8"), bcrypt.gensalt(rounds=12)
+            ).decode("utf-8")
             user = User(
                 username=username,
                 password=hashed_password,
                 is_active=True,
+                is_admin=is_admin,
             )
             await uow.users.create(user)
             await uow.commit()

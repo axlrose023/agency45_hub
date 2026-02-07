@@ -4,4 +4,5 @@ export interface TelegramRegisterResponse {
 
 export interface TelegramChatIdResponse {
   chat_id: number | null;
+  telegram_username: string | null;
 }

@@ -23,4 +23,5 @@ class User(Base, UUID7IDMixin, DateTimeMixin):
     telegram_chat_id: Mapped[int | None] = mapped_column(
         BigInteger, unique=True, nullable=True
     )
+    telegram_username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     telegram_token: Mapped[str | None] = mapped_column(String(36), nullable=True)

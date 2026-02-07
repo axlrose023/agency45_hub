@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Languages } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/locale';
 import { cn } from '@/utils/cn';
@@ -14,8 +14,8 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
 
   const options = useMemo(
     () => [
-      { value: 'ua' as const, label: t('languageUkrainian') },
-      { value: 'ru' as const, label: t('languageRussian') },
+      { value: 'ua' as const, short: 'UA', label: t('languageUkrainian') },
+      { value: 'ru' as const, short: 'RU', label: t('languageRussian') },
     ],
     [t],
   );
@@ -42,19 +42,16 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          'h-10 inline-flex items-center justify-between gap-2 px-2.5 sm:px-3 sm:w-[196px]',
-          'border border-brand-gray-300 rounded-lg bg-white text-sm font-body text-brand-gray-700',
+          'h-10 inline-flex items-center justify-between gap-1.5 px-2.5 sm:px-3',
+          'border border-brand-gray-300 rounded-lg bg-white text-sm font-heading font-semibold text-brand-gray-700',
           'hover:bg-brand-gray-50 transition-colors cursor-pointer select-none',
         )}
       >
-        <span className="inline-flex items-center gap-2 min-w-0">
-          <Languages size={16} className="text-brand-gray-500 flex-shrink-0" />
-          <span className="truncate leading-none hidden sm:inline">{selected.label}</span>
-        </span>
+        <span className="leading-none">{selected.short}</span>
         <ChevronDown
-          size={16}
+          size={14}
           className={cn(
-            'text-brand-gray-500 flex-shrink-0 transition-transform duration-200 hidden sm:block',
+            'text-brand-gray-500 flex-shrink-0 transition-transform duration-200',
             open && 'rotate-180',
           )}
         />
@@ -64,7 +61,7 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
         <div
           role="listbox"
           className={cn(
-            'absolute right-0 top-full mt-2 z-30 w-[196px] p-1.5',
+            'absolute right-0 top-full mt-2 z-30 w-[160px] p-1.5',
             'rounded-xl border border-brand-gray-200 bg-white shadow-lg',
           )}
         >

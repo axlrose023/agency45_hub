@@ -133,6 +133,14 @@ const translations: Record<Locale, Record<string, string>> = {
     dateTo: 'До',
     dateApply: 'Застосувати',
     facebookInvalidTimeRange: 'Змініть time range.',
+    facebookNotConnected: 'Facebook не підключено',
+    facebookNotConnectedDescription: 'Підключіть Facebook-акаунт, щоб отримувати дані рекламних кабінетів.',
+    facebookConnectButton: 'Увійти через Facebook',
+    facebookConnecting: 'Підключення...',
+    facebookConnectError: 'Не вдалося підключити Facebook. Спробуйте ще раз.',
+    facebookConnectSuccess: 'Facebook успішно підключено!',
+    facebookReconnect: 'Переподключити Facebook',
+    facebookContactAdmin: 'Зверніться до адміністратора для підключення Facebook-акаунту.',
     statusActive: 'Активна',
     statusPaused: 'Призупинена',
     statusDeleted: 'Видалена',
@@ -257,6 +265,14 @@ const translations: Record<Locale, Record<string, string>> = {
     dateTo: 'По',
     dateApply: 'Применить',
     facebookInvalidTimeRange: 'Измените time range.',
+    facebookNotConnected: 'Facebook не подключён',
+    facebookNotConnectedDescription: 'Подключите Facebook-аккаунт, чтобы получать данные рекламных кабинетов.',
+    facebookConnectButton: 'Войти через Facebook',
+    facebookConnecting: 'Подключение...',
+    facebookConnectError: 'Не удалось подключить Facebook. Попробуйте ещё раз.',
+    facebookConnectSuccess: 'Facebook успешно подключён!',
+    facebookReconnect: 'Переподключить Facebook',
+    facebookContactAdmin: 'Обратитесь к администратору для подключения Facebook-аккаунта.',
     statusActive: 'Активна',
     statusPaused: 'Приостановлена',
     statusDeleted: 'Удалена',
@@ -273,6 +289,13 @@ function isLocale(value: string | null): value is Locale {
   return SUPPORTED_LOCALES.includes(value as Locale);
 }
 
+function detectBrowserLocale(): Locale {
+  const lang = navigator.language?.toLowerCase() ?? '';
+  if (lang.startsWith('ru')) return 'ru';
+  if (lang.startsWith('uk') || lang.startsWith('ua')) return 'ua';
+  return DEFAULT_LOCALE;
+}
+
 function getInitialLocale(): Locale {
   if (typeof window === 'undefined') {
     return DEFAULT_LOCALE;
@@ -281,7 +304,8 @@ function getInitialLocale(): Locale {
   if (stored === 'uk') {
     return 'ua';
   }
-  return isLocale(stored) ? stored : DEFAULT_LOCALE;
+  if (isLocale(stored)) return stored;
+  return detectBrowserLocale();
 }
 
 interface LocaleContextValue {

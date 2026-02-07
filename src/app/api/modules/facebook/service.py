@@ -96,6 +96,32 @@ class FacebookService:
             detail="Facebook API временно недоступен. Попробуйте позже.",
         ) from error
 
+    async def get_auth_status(self) -> dict:
+        """Check if Facebook is connected and return app_id."""
+        fb_auth = await self.uow.facebook_auth.get()
+        return {
+            "connected": bool(fb_auth and fb_auth.long_token),
+            "app_id": self.sdk.client.config.app_id,
+        }
+
+    async def exchange_code(self, code: str, redirect_uri: str) -> None:
+        """Exchange OAuth code for access token, then for long-lived token."""
+        try:
+            code_data = await self.sdk.exchange_code(code, redirect_uri)
+        except FacebookAPIError as error:
+            self._raise_facebook_http_exception(error)
+
+        short_lived_token = code_data["access_token"]
+
+        try:
+            data = await self.sdk.exchange_token(short_lived_token)
+        except FacebookAPIError as error:
+            self._raise_facebook_http_exception(error)
+
+        long_token = data["access_token"]
+        await self.uow.facebook_auth.set_token(long_token)
+        await self.uow.commit()
+
     async def exchange_token(self, short_lived_token: str) -> None:
         """Exchange short-lived token for long-lived token and save it."""
         try:

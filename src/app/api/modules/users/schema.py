@@ -12,6 +12,7 @@ class UserResponse(BaseModel):
     is_admin: bool
     ad_account_id: str | None = None
     telegram_chat_id: int | None = None
+    telegram_username: str | None = None
     telegram_token: str | None = None
 
 

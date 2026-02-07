@@ -10,6 +10,7 @@ import AdSetsPage from '@/pages/AdSetsPage';
 import AdsPage from '@/pages/AdsPage';
 import UsersPage from '@/pages/UsersPage';
 import ProfilePage from '@/pages/ProfilePage';
+import FacebookCallbackPage from '@/pages/FacebookCallbackPage';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<AuthGuard />}>
+          <Route path="/facebook/callback" element={<FacebookCallbackPage />} />
           <Route element={<AppLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />

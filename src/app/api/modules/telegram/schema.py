@@ -7,3 +7,4 @@ class TelegramRegisterResponse(BaseModel):
 
 class TelegramChatIdResponse(BaseModel):
     chat_id: int | None
+    telegram_username: str | None = None

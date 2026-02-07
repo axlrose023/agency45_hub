@@ -20,6 +20,12 @@ class FacebookSDKService:
         end = today.strftime("%Y-%m-%d")
         return {"since": start, "until": end}
 
+    async def exchange_code(
+        self, code: str, redirect_uri: str
+    ) -> dict[str, Any]:
+        """Exchange OAuth code for access token."""
+        return await self.client.exchange_code(code, redirect_uri)
+
     async def exchange_token(self, short_lived_token: str) -> dict[str, Any]:
         """Exchange short-lived token for long-lived token."""
         return await self.client.exchange_token(short_lived_token)

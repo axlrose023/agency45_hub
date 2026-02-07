@@ -10,12 +10,32 @@ from app.api.modules.facebook.schema import (
     AdResponse,
     AdSetResponse,
     CampaignResponse,
+    ExchangeCodeRequest,
     ExchangeTokenRequest,
 )
 from app.api.modules.facebook.service import FacebookService
 from app.api.modules.users.models import User
 
 router = APIRouter(route_class=DishkaRoute)
+
+
+@router.get("/auth/status")
+async def get_auth_status(
+    service: FromDishka[FacebookService],
+    _: User = Depends(AdminRequired()),
+) -> dict:
+    """Get Facebook auth status and app_id (admin only)."""
+    return await service.get_auth_status()
+
+
+@router.post("/auth/exchange-code", status_code=204)
+async def exchange_code(
+    request: ExchangeCodeRequest,
+    service: FromDishka[FacebookService],
+    _: User = Depends(AdminRequired()),
+) -> None:
+    """Exchange OAuth code for long-lived token (admin only)."""
+    await service.exchange_code(request.code, request.redirect_uri)
 
 
 @router.post("/auth/exchange-token", status_code=204)

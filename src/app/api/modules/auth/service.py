@@ -1,3 +1,5 @@
+import asyncio
+
 import bcrypt
 from fastapi import HTTPException, status
 
@@ -23,9 +25,12 @@ class AuthService:
                 detail="Incorrect username or password",
             )
 
-        if not bcrypt.checkpw(
-            request.password.encode("utf-8"), user.password.encode("utf-8")
-        ):
+        is_password_valid = await asyncio.to_thread(
+            bcrypt.checkpw,
+            request.password.encode("utf-8"),
+            user.password.encode("utf-8"),
+        )
+        if not is_password_valid:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password",
@@ -33,8 +38,12 @@ class AuthService:
 
         return self.jwt_service.create_token_pair(user)
 
-    def hash_password(self, password: str) -> str:
+    async def hash_password(self, password: str) -> str:
         """Hash a password."""
-        return bcrypt.hashpw(
-            password.encode("utf-8"), bcrypt.gensalt(rounds=12)
-        ).decode("utf-8")
+        hashed = await asyncio.to_thread(
+            lambda: bcrypt.hashpw(
+                password.encode("utf-8"),
+                bcrypt.gensalt(rounds=12),
+            )
+        )
+        return hashed.decode("utf-8")

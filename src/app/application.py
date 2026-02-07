@@ -31,9 +31,36 @@ async def ping() -> None | dict:
     return {"message": "pong"}
 
 
+async def _ensure_default_admin() -> None:
+    """Create default admin user (admin/admin, is_admin=True) if it does not exist."""
+    import bcrypt
+
+    from app.api.modules.users.models import User
+    from app.database.uow import UnitOfWork
+
+    container = get_async_container()
+    async with container() as request_container:
+        uow = await request_container.get(UnitOfWork)
+        existing = await uow.users.get_by_username("admin")
+        if existing is not None:
+            return
+        hashed = bcrypt.hashpw(b"admin", bcrypt.gensalt(rounds=12)).decode()
+        user = User(
+            username="admin",
+            password=hashed,
+            is_active=True,
+            is_admin=True,
+        )
+        await uow.users.create(user)
+        await uow.commit()
+    logger.info("Default admin user created (username: admin, password: admin)")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("Starting application...")
+
+    await _ensure_default_admin()
 
     logger.info("Starting telegram bot polling...")
     bot_task = asyncio.create_task(_telegram_bot.start_polling())

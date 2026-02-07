@@ -46,8 +46,20 @@ export async function getAds(adsetId: string, dateRange?: DateRange): Promise<Ad
   return response.data;
 }
 
+export async function getFacebookAuthStatus(): Promise<{ connected: boolean; app_id: string }> {
+  const response = await apiClient.get<{ connected: boolean; app_id: string }>('/facebook/auth/status');
+  return response.data;
+}
+
 export async function exchangeToken(shortLivedToken: string): Promise<void> {
   await apiClient.post('/facebook/auth/exchange-token', {
     short_lived_token: shortLivedToken,
+  });
+}
+
+export async function exchangeCode(code: string, redirectUri: string): Promise<void> {
+  await apiClient.post('/facebook/auth/exchange-code', {
+    code,
+    redirect_uri: redirectUri,
   });
 }

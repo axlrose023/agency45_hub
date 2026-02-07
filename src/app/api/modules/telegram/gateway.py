@@ -39,13 +39,20 @@ class TelegramGateway:
         await self.session.flush()
 
     async def update_telegram_chat_id(
-        self, user_id: uuid.UUID, chat_id: int
+        self,
+        user_id: uuid.UUID,
+        chat_id: int,
+        username: str | None = None,
     ) -> None:
         """Link telegram chat to user and clear token."""
         stmt = (
             update(User)
             .where(User.id == user_id)
-            .values(telegram_chat_id=chat_id, telegram_token=None)
+            .values(
+                telegram_chat_id=chat_id,
+                telegram_username=username,
+                telegram_token=None,
+            )
         )
         await self.session.execute(stmt)
         await self.session.flush()
@@ -61,7 +68,7 @@ class TelegramGateway:
         stmt = (
             update(User)
             .where(User.id == user_id)
-            .values(telegram_chat_id=None, telegram_token=None)
+            .values(telegram_chat_id=None, telegram_username=None, telegram_token=None)
         )
         await self.session.execute(stmt)
         await self.session.flush()

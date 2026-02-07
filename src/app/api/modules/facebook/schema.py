@@ -19,6 +19,13 @@ class ExchangeTokenRequest(BaseModel):
     short_lived_token: str = Field(description="Short-lived user access token")
 
 
+class ExchangeCodeRequest(BaseModel):
+    """Request to exchange OAuth authorization code."""
+
+    code: str = Field(description="OAuth authorization code from Facebook redirect")
+    redirect_uri: str = Field(description="Redirect URI used in the OAuth flow")
+
+
 class InsightsData(BaseModel):
     """Facebook insights data."""
 

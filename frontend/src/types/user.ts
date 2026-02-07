@@ -4,6 +4,7 @@ export interface UserResponse {
   is_admin: boolean;
   ad_account_id: string | null;
   telegram_chat_id: number | null;
+  telegram_username: string | null;
   telegram_token: string | null;
 }
 

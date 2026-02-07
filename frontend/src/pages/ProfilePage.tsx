@@ -12,8 +12,11 @@ export default function ProfilePage() {
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const navigate = useNavigate();
   const { t, locale } = useI18n();
-  const [telegramConnected, setTelegramConnected] = useState<boolean>(false);
-  const [chatId, setChatId] = useState<number | null>(null);
+  const [telegramConnected, setTelegramConnected] = useState<boolean>(Boolean(user?.telegram_chat_id));
+  const [chatId, setChatId] = useState<number | null>(user?.telegram_chat_id ?? null);
+  const [telegramUsername, setTelegramUsername] = useState<string | null>(
+    user?.telegram_username ?? null,
+  );
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
   const [waitingForBot, setWaitingForBot] = useState(false);
@@ -26,10 +29,13 @@ export default function ProfilePage() {
     try {
       const data = await getChatId();
       setChatId(data.chat_id);
+      setTelegramUsername(data.telegram_username);
       if (data.chat_id) {
         setTelegramConnected(true);
         setWaitingForBot(false);
         setBotLink(null);
+      } else {
+        setTelegramConnected(false);
       }
     } catch {
       // ignore
@@ -60,6 +66,7 @@ export default function ProfilePage() {
         .then((data) => {
           if (data.chat_id) {
             setChatId(data.chat_id);
+            setTelegramUsername(data.telegram_username);
             setTelegramConnected(true);
             setWaitingForBot(false);
             setBotLink(null);
@@ -91,6 +98,7 @@ export default function ProfilePage() {
       await telegramLogout();
       setTelegramConnected(false);
       setChatId(null);
+      setTelegramUsername(null);
       setWaitingForBot(false);
       setBotLink(null);
     } catch {
@@ -181,6 +189,11 @@ export default function ProfilePage() {
               {chatId && (
                 <span className="text-xs text-brand-gray-400 ml-2">
                   {t('chatIdLabel')}: {chatId}
+                </span>
+              )}
+              {telegramUsername && (
+                <span className="text-xs text-brand-gray-400 ml-2">
+                  @{telegramUsername}
                 </span>
               )}
             </div>

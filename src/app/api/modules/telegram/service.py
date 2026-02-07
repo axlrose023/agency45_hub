@@ -31,6 +31,12 @@ class TelegramService:
         await self.uow.commit()
 
     async def get_chat_id(self, user_id: UUID) -> TelegramChatIdResponse:
-        """Get telegram chat ID for user."""
-        chat_id = await self.uow.telegram.get_chat_id_by_user_id(user_id)
-        return TelegramChatIdResponse(chat_id=chat_id)
+        """Get telegram chat data for user."""
+        user = await self.uow.users.get_by_id(user_id)
+        if not user:
+            return TelegramChatIdResponse(chat_id=None, telegram_username=None)
+
+        return TelegramChatIdResponse(
+            chat_id=user.telegram_chat_id,
+            telegram_username=user.telegram_username,
+        )

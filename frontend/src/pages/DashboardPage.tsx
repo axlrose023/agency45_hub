@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAdAccounts } from '@/api/facebook';
 import type { AdAccountResponse } from '@/types/facebook';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import EmptyState from '@/components/ui/EmptyState';
+import FacebookConnect from '@/components/ui/FacebookConnect';
 import { Building2, ChevronRight } from 'lucide-react';
 import { useI18n } from '@/i18n/locale';
+import { useAuthStore } from '@/store/authStore';
+import axios from 'axios';
 
 function AccountCard({
   account,
@@ -68,17 +71,65 @@ export default function DashboardPage() {
   const [accounts, setAccounts] = useState<AdAccountResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [needsFacebookConnect, setNeedsFacebookConnect] = useState(false);
   const navigate = useNavigate();
   const { t } = useI18n();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.is_admin ?? false;
 
-  useEffect(() => {
+  const loadAccounts = useCallback(() => {
+    setLoading(true);
+    setError('');
+    setNeedsFacebookConnect(false);
     getAdAccounts()
       .then(setAccounts)
-      .catch(() => setError(t('dashboardLoadAccountsError')))
+      .catch((err) => {
+        const isNotConnected =
+          axios.isAxiosError(err) &&
+          err.response?.status === 400 &&
+          typeof err.response?.data?.detail === 'string' &&
+          err.response.data.detail.toLowerCase().includes('not connected');
+
+        if (isNotConnected) {
+          setNeedsFacebookConnect(true);
+        } else {
+          setError(t('dashboardLoadAccountsError'));
+        }
+      })
       .finally(() => setLoading(false));
   }, [t]);
 
+  useEffect(() => {
+    loadAccounts();
+  }, [loadAccounts]);
+
   if (loading) return <LoadingSpinner size="lg" />;
+
+  if (needsFacebookConnect) {
+    if (isAdmin) {
+      return <FacebookConnect onConnected={loadAccounts} />;
+    }
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl border border-brand-gray-200 p-8 sm:p-10 text-center shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-brand-gray-100 flex items-center justify-center mx-auto mb-6">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 text-brand-gray-400" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-heading font-bold text-brand-black mb-2">
+              {t('facebookNotConnected')}
+            </h2>
+            <p className="text-sm text-brand-gray-500 font-body">
+              {t('facebookContactAdmin')}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) return <div className="text-red-600 text-center py-8">{error}</div>;
 
   if (accounts.length === 0) {
