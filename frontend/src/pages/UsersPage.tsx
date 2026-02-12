@@ -7,6 +7,7 @@ import PasswordInput from '@/components/ui/PasswordInput';
 import { useI18n } from '@/i18n/locale';
 import type { AdAccountResponse } from '@/types/facebook';
 import type { UserResponse, UsersPaginationParams, UsersPaginationResponse } from '@/types/user';
+import { useAuthStore } from '@/store/authStore';
 import { Plus, Search, Shield, SquarePen, User, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -23,12 +24,14 @@ export default function UsersPage() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newAdAccountId, setNewAdAccountId] = useState('');
+  const [newIsAdmin, setNewIsAdmin] = useState(false);
   const [createError, setCreateError] = useState('');
   const [creating, setCreating] = useState(false);
   const [editAdAccountId, setEditAdAccountId] = useState('');
   const [updateError, setUpdateError] = useState('');
   const [updating, setUpdating] = useState(false);
   const { t } = useI18n();
+  const currentUser = useAuthStore((s) => s.user);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -58,12 +61,14 @@ export default function UsersPage() {
       await createUser({
         username: newUsername,
         password: newPassword,
-        ad_account_id: newAdAccountId || null,
+        is_admin: newIsAdmin,
+        ad_account_id: newIsAdmin ? null : (newAdAccountId || null),
       });
       setShowModal(false);
       setNewUsername('');
       setNewPassword('');
       setNewAdAccountId('');
+      setNewIsAdmin(false);
       fetchUsers();
     } catch {
       setCreateError(t('createUserFailed'));
@@ -208,14 +213,18 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(user)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-heading font-medium border border-brand-gray-300 text-brand-gray-700 hover:bg-brand-gray-50 transition-colors"
-                      >
-                        <SquarePen size={12} />
-                        {t('editUser')}
-                      </button>
+                      {user.created_by_id === currentUser?.id && !user.is_admin ? (
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(user)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-heading font-medium border border-brand-gray-300 text-brand-gray-700 hover:bg-brand-gray-50 transition-colors"
+                        >
+                          <SquarePen size={12} />
+                          {t('editUser')}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-brand-gray-400">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -269,21 +278,55 @@ export default function UsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
-                  {t('adAccountLabel')}
+                  {t('roleLabel')}
                 </label>
-                <select
-                  value={newAdAccountId}
-                  onChange={(e) => setNewAdAccountId(e.target.value)}
-                  className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent bg-white"
-                >
-                  <option value="">{t('noAccountAssigned')}</option>
-                  {adAccounts.map((acc) => (
-                    <option key={acc.account_id} value={acc.account_id}>
-                      {acc.name || acc.account_id} ({acc.account_id})
-                    </option>
-                  ))}
-                </select>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewIsAdmin(false)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-heading font-medium border transition-colors ${
+                      !newIsAdmin
+                        ? 'border-brand-black bg-brand-black text-white'
+                        : 'border-brand-gray-300 text-brand-gray-600 hover:bg-brand-gray-50'
+                    }`}
+                  >
+                    <User size={14} />
+                    {t('roleUser')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewIsAdmin(true)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-heading font-medium border transition-colors ${
+                      newIsAdmin
+                        ? 'border-brand-black bg-brand-black text-white'
+                        : 'border-brand-gray-300 text-brand-gray-600 hover:bg-brand-gray-50'
+                    }`}
+                  >
+                    <Shield size={14} />
+                    {t('roleAdmin')}
+                  </button>
+                </div>
               </div>
+
+              {!newIsAdmin && (
+                <div>
+                  <label className="block text-sm font-heading font-medium text-brand-gray-700 mb-1.5">
+                    {t('adAccountLabel')}
+                  </label>
+                  <select
+                    value={newAdAccountId}
+                    onChange={(e) => setNewAdAccountId(e.target.value)}
+                    className="w-full border border-brand-gray-300 rounded-lg px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-brand-black focus:border-transparent bg-white"
+                  >
+                    <option value="">{t('noAccountAssigned')}</option>
+                    {adAccounts.map((acc) => (
+                      <option key={acc.account_id} value={acc.account_id}>
+                        {acc.name || acc.account_id} ({acc.account_id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {createError && (
                 <div className="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3 border border-red-200">
