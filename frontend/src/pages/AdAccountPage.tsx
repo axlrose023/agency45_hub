@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getCampaigns } from '@/api/facebook';
 import { useDateRange } from '@/hooks/useDateRange';
 import { groupCampaignsByObjective } from '@/utils/insightHelpers';
@@ -41,10 +41,22 @@ export default function AdAccountPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useI18n();
   const [groups, setGroups] = useState<ObjectiveGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const stateAccountName = (location.state as { accountName?: string })?.accountName;
+  const storageKey = `fb_account_${accountId}_name`;
+
+  const accountName = (() => {
+    if (stateAccountName) {
+      sessionStorage.setItem(storageKey, stateAccountName);
+      return stateAccountName;
+    }
+    return sessionStorage.getItem(storageKey);
+  })();
 
   useEffect(() => {
     if (!accountId) return;
@@ -68,7 +80,7 @@ export default function AdAccountPage() {
           &larr; {t('backToAccounts')}
         </button>
         <h1 className="text-xl sm:text-2xl font-heading font-bold text-brand-black">
-          {t('campaignsByObjective')}
+          {accountName || t('campaignsByObjective')}
         </h1>
         <p className="text-brand-gray-500 text-sm mt-1">
           {t('accountLabel')}: {accountId}

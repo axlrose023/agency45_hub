@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCampaigns } from '@/api/facebook';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -16,6 +16,8 @@ export default function CampaignGroupPage() {
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
   const { t } = useI18n();
+
+  const accountName = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_name`), [accountId]);
   const [campaigns, setCampaigns] = useState<CampaignResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -52,7 +54,7 @@ export default function CampaignGroupPage() {
           {objectiveLabel} {t('campaignsTitleSuffix')}
         </h1>
         <p className="text-brand-gray-500 text-sm mt-1">
-          {campaigns.length} {t('campaignsCountLabel')}
+          {accountName && <>{accountName} &middot; </>}{campaigns.length} {t('campaignsCountLabel')}
         </p>
       </div>
 

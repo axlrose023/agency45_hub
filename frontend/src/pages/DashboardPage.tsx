@@ -161,7 +161,7 @@ export default function DashboardPage() {
         <div className="w-full max-w-md">
           <AccountCard
             account={account}
-            onClick={() => navigate(`/accounts/${account.account_id}`)}
+            onClick={() => navigate(`/accounts/${account.account_id}`, { state: { accountName: account.name } })}
             t={t}
           />
         </div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
           <AccountCard
             key={account.account_id}
             account={account}
-            onClick={() => navigate(`/accounts/${account.account_id}`)}
+            onClick={() => navigate(`/accounts/${account.account_id}`, { state: { accountName: account.name } })}
             t={t}
           />
         ))}

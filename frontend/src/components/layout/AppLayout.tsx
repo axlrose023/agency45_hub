@@ -6,7 +6,18 @@ import { DateRangeContext, getDefaultDateRange } from '@/hooks/useDateRange';
 import type { DateRange } from '@/types/facebook';
 
 export default function AppLayout() {
-  const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange);
+  const [dateRange, setDateRangeState] = useState<DateRange>(() => {
+    const saved = sessionStorage.getItem('fb_date_range');
+    if (saved) {
+      try { return JSON.parse(saved) as DateRange; } catch { /* ignore */ }
+    }
+    return getDefaultDateRange();
+  });
+
+  const setDateRange = (range: DateRange) => {
+    sessionStorage.setItem('fb_date_range', JSON.stringify(range));
+    setDateRangeState(range);
+  };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (

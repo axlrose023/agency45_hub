@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAdSets } from '@/api/facebook';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -16,6 +16,8 @@ export default function AdSetsPage() {
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
   const { t } = useI18n();
+
+  const accountName = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_name`), [accountId]);
   const [adsets, setAdsets] = useState<AdSetResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,7 +47,7 @@ export default function AdSetsPage() {
           {t('adSetsTitle')}
         </h1>
         <p className="text-brand-gray-500 text-sm mt-1">
-          {t('campaignLabel')}: {campaignId} &middot; {adsets.length} {t('adSetsCountLabel')}
+          {accountName && <>{accountName} &middot; </>}{t('campaignLabel')}: {campaignId} &middot; {adsets.length} {t('adSetsCountLabel')}
         </p>
       </div>
 

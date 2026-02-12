@@ -41,6 +41,28 @@ export default function DateRangePicker() {
       },
     },
     {
+      label: t('datePresetYesterday'),
+      range: () => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const d = toISODate(yesterday);
+        return { since: d, until: d };
+      },
+    },
+    {
+      label: t('datePresetThisWeek'),
+      range: () => {
+        const now = new Date();
+        const day = now.getDay();
+        const monday = new Date(now);
+        monday.setDate(now.getDate() - ((day === 0 ? 7 : day) - 1));
+        return {
+          since: toISODate(monday),
+          until: toISODate(now),
+        };
+      },
+    },
+    {
       label: t('datePresetThisMonth'),
       range: () => {
         const now = new Date();
