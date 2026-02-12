@@ -26,6 +26,7 @@ class InsightsData(BaseModel):
     cpm: str | None = None
     ctr: str | None = None
     reach: str | None = None
+    conversations: str | None = None
 
 
 class AdAccountResponse(BaseModel):

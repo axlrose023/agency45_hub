@@ -10,6 +10,7 @@ export function sumInsights(insightsArray: (InsightsData | null | undefined)[]):
   let totalImpressions = 0;
   let totalClicks = 0;
   let totalReach = 0;
+  let totalConversations = 0;
 
   for (const ins of insightsArray) {
     if (!ins) continue;
@@ -17,6 +18,7 @@ export function sumInsights(insightsArray: (InsightsData | null | undefined)[]):
     totalImpressions += parseInsightValue(ins.impressions);
     totalClicks += parseInsightValue(ins.clicks);
     totalReach += parseInsightValue(ins.reach);
+    totalConversations += parseInsightValue(ins.conversations);
   }
 
   return {
@@ -27,6 +29,7 @@ export function sumInsights(insightsArray: (InsightsData | null | undefined)[]):
     cpc: totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : '0.00',
     cpm: totalImpressions > 0 ? ((totalSpend / totalImpressions) * 1000).toFixed(2) : '0.00',
     ctr: totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : '0.00',
+    conversations: totalConversations > 0 ? totalConversations.toString() : null,
   };
 }
 

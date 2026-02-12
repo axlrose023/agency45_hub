@@ -6,6 +6,7 @@ export interface InsightsData {
   cpm: string | null;
   ctr: string | null;
   reach: string | null;
+  conversations: string | null;
 }
 
 export interface AdAccountResponse {

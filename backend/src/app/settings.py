@@ -48,7 +48,7 @@ class FacebookConfig(BaseModel):
     # Insights fields
     ad_insight_fields: str = "spend,impressions,clicks,cpc,cpm,ctr,reach"
     campaign_insight_fields: str = (
-        "campaign_name,spend,impressions,clicks,cpc,cpm,ctr,reach"
+        "campaign_name,spend,impressions,clicks,cpc,cpm,ctr,reach,actions"
     )
 
     # Active status filter

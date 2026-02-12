@@ -156,6 +156,19 @@ class FacebookClient(HttpClient):
                 cleaned.pop("date_start", None)
                 cleaned.pop("date_stop", None)
                 cleaned.pop("campaign_id", None)
+
+                actions = cleaned.pop("actions", None)
+                cleaned.pop("cost_per_action_type", None)
+
+                conversations = None
+                if actions:
+                    for a in actions:
+                        if a.get("action_type") == "onsite_conversion.messaging_conversation_started_7d":
+                            conversations = a.get("value")
+                            break
+
+                cleaned["conversations"] = conversations
+
                 if cleaned:
                     insights_by_campaign[campaign_id] = cleaned
 
