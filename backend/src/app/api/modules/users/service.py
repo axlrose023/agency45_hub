@@ -51,22 +51,33 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
         return user
 
-    async def create_user(self, request: CreateUserRequest) -> User:
+    async def create_user(
+        self, request: CreateUserRequest, current_user: User
+    ) -> User:
         hashed_password = await self.auth_service.hash_password(request.password)
         user = User(
             username=request.username,
             password=hashed_password,
             is_active=True,
-            ad_account_id=request.ad_account_id,
+            is_admin=request.is_admin,
+            ad_account_id=None if request.is_admin else request.ad_account_id,
+            created_by_id=current_user.id,
         )
         await self.uow.users.create(user)
         await self.uow.commit()
         return user
 
-    async def update_user(self, user_id: UUID, request: UpdateUserRequest) -> User:
+    async def update_user(
+        self, user_id: UUID, request: UpdateUserRequest, current_user: User
+    ) -> User:
         user = await self.uow.users.get_by_id(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
+
+        if user.created_by_id != current_user.id:
+            raise HTTPException(
+                status_code=403, detail="You can only edit users you created"
+            )
 
         user.ad_account_id = request.ad_account_id
         await self.uow.commit()

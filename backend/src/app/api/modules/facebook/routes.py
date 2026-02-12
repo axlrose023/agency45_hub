@@ -20,18 +20,18 @@ router = APIRouter(route_class=DishkaRoute)
 @router.get("/auth/status")
 async def get_auth_status(
     service: FromDishka[FacebookService],
-    _: User = Depends(AdminRequired()),
+    current_user: User = Depends(AdminRequired()),
 ) -> dict:
-    return await service.get_auth_status()
+    return await service.get_auth_status(current_user)
 
 
 @router.post("/auth/exchange-code", status_code=204)
 async def exchange_code(
     request: ExchangeCodeRequest,
     service: FromDishka[FacebookService],
-    _: User = Depends(AdminRequired()),
+    current_user: User = Depends(AdminRequired()),
 ) -> None:
-    await service.exchange_code(request.code, request.redirect_uri)
+    await service.exchange_code(request.code, request.redirect_uri, current_user)
 
 
 @router.post("/auth/exchange-token", status_code=204)
@@ -40,7 +40,7 @@ async def exchange_token(
     service: FromDishka[FacebookService],
     current_user: User = Depends(AdminRequired()),
 ) -> None:
-    await service.exchange_token(request.short_lived_token)
+    await service.exchange_token(request.short_lived_token, current_user)
 
 
 @router.get("/ad-accounts")
@@ -87,8 +87,8 @@ async def get_adsets(
 async def get_ads(
     adset_id: str,
     service: FromDishka[FacebookService],
-    _: User = Depends(AuthenticateUser()),
+    current_user: User = Depends(AuthenticateUser()),
     since: date | None = Query(None, description="Start date (YYYY-MM-DD)"),
     until: date | None = Query(None, description="End date (YYYY-MM-DD)"),
 ) -> list[AdResponse]:
-    return await service.get_ads(adset_id, since=since, until=until)
+    return await service.get_ads(current_user, adset_id, since=since, until=until)

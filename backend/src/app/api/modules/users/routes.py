@@ -25,7 +25,7 @@ async def create_user(
     service: FromDishka[UserService],
     current_user: User = Depends(AdminRequired()),
 ) -> UserResponse:
-    return await service.create_user(request)
+    return await service.create_user(request, current_user)
 
 
 @router.patch("/{user_id}", response_model=UserResponse)
@@ -35,7 +35,7 @@ async def update_user(
     service: FromDishka[UserService],
     current_user: User = Depends(AdminRequired()),
 ) -> UserResponse:
-    return await service.update_user(user_id, request)
+    return await service.update_user(user_id, request, current_user)
 
 
 @router.get("", response_model=UsersPaginationResponse)

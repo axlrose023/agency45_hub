@@ -38,8 +38,14 @@ class FacebookService:
             }
         return self.sdk.get_current_month_range()
 
-    async def _get_access_token(self) -> str:
-        fb_auth = await self.uow.facebook_auth.get()
+    async def _get_access_token(self, user: User) -> str:
+        owner_id = user.id if user.is_admin else user.created_by_id
+        if not owner_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Facebook not connected. Admin must authenticate first.",
+            )
+        fb_auth = await self.uow.facebook_auth.get_by_owner(owner_id)
         if not fb_auth or not fb_auth.long_token:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -87,14 +93,16 @@ class FacebookService:
             detail="Facebook API временно недоступен. Попробуйте позже.",
         ) from error
 
-    async def get_auth_status(self) -> dict:
-        fb_auth = await self.uow.facebook_auth.get()
+    async def get_auth_status(self, user: User) -> dict:
+        fb_auth = await self.uow.facebook_auth.get_by_owner(user.id)
         return {
             "connected": bool(fb_auth and fb_auth.long_token),
             "app_id": self.sdk.client.config.app_id,
         }
 
-    async def exchange_code(self, code: str, redirect_uri: str) -> None:
+    async def exchange_code(
+        self, code: str, redirect_uri: str, user: User
+    ) -> None:
         try:
             code_data = await self.sdk.exchange_code(code, redirect_uri)
         except FacebookAPIError as error:
@@ -108,21 +116,23 @@ class FacebookService:
             self._raise_facebook_http_exception(error)
 
         long_token = data["access_token"]
-        await self.uow.facebook_auth.set_token(long_token)
+        await self.uow.facebook_auth.set_token(user.id, long_token)
         await self.uow.commit()
 
-    async def exchange_token(self, short_lived_token: str) -> None:
+    async def exchange_token(
+        self, short_lived_token: str, user: User
+    ) -> None:
         try:
             data = await self.sdk.exchange_token(short_lived_token)
         except FacebookAPIError as error:
             self._raise_facebook_http_exception(error)
         long_token = data["access_token"]
 
-        await self.uow.facebook_auth.set_token(long_token)
+        await self.uow.facebook_auth.set_token(user.id, long_token)
         await self.uow.commit()
 
     async def get_ad_accounts(self, user: User) -> list[dict]:
-        access_token = await self._get_access_token()
+        access_token = await self._get_access_token(user)
         try:
             all_accounts = await self.sdk.get_ad_accounts(access_token)
         except FacebookAPIError as error:
@@ -147,7 +157,7 @@ class FacebookService:
     ) -> list[CampaignResponse]:
         self._check_account_access(user, account_id)
 
-        access_token = await self._get_access_token()
+        access_token = await self._get_access_token(user)
         time_range = self._build_time_range(since, until)
 
         try:
@@ -168,7 +178,7 @@ class FacebookService:
     ) -> list[AdSetResponse]:
         self._check_account_access(user, account_id)
 
-        access_token = await self._get_access_token()
+        access_token = await self._get_access_token(user)
         time_range = self._build_time_range(since, until)
 
         try:
@@ -181,11 +191,12 @@ class FacebookService:
 
     async def get_ads(
         self,
+        user: User,
         adset_id: str,
         since: date | None = None,
         until: date | None = None,
     ) -> list[AdResponse]:
-        access_token = await self._get_access_token()
+        access_token = await self._get_access_token(user)
         time_range = self._build_time_range(since, until)
 
         try:
