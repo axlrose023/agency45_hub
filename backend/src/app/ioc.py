@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+from aiogram import Bot
 from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +21,10 @@ class AppProvider(Provider):
     @provide(scope=Scope.APP)
     def get_config(self) -> Config:
         return get_config()
+
+    @provide(scope=Scope.APP)
+    def get_bot(self, config: Config) -> Bot:
+        return Bot(token=config.telegram.bot_token)
 
     @provide(scope=Scope.REQUEST)
     async def get_session(self) -> AsyncIterator[AsyncSession]:
@@ -60,8 +65,10 @@ class ServicesProvider(Provider):
         return FacebookService(uow, sdk)
 
     @provide(scope=Scope.REQUEST)
-    def get_telegram_service(self, uow: UnitOfWork, config: Config) -> TelegramService:
-        return TelegramService(uow, config.telegram)
+    def get_telegram_service(
+        self, uow: UnitOfWork, config: Config, bot: Bot, fb_client: FacebookClient
+    ) -> TelegramService:
+        return TelegramService(uow, config.telegram, bot, fb_client)
 
 
 def get_async_container() -> AsyncContainer:
