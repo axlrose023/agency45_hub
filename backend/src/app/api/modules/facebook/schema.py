@@ -41,6 +41,7 @@ class CampaignResponse(BaseModel):
     campaign_name: str | None = None
     objective: str | None = None
     status: str | None = None
+    updated_time: str | None = None
     insights: dict[str, Any] | None = None
 
 

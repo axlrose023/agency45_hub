@@ -63,7 +63,7 @@ class FacebookClient(HttpClient):
 
             items.extend(data.get("data", []))
             url = data.get("paging", {}).get("next")
-            params = {}
+            params = None
 
         return items
 
@@ -125,14 +125,18 @@ class FacebookClient(HttpClient):
         account_id: str,
         access_token: str,
         time_range: dict[str, str],
+        active_only: bool = True,
     ) -> list[dict[str, Any]]:
+        params: dict[str, Any] = {
+            "fields": "id,name,status,objective,updated_time",
+        }
+        if active_only:
+            params["filtering"] = self._get_active_filter()
+
         campaigns = await self._fetch_with_pagination(
             f"act_{account_id}/campaigns",
             access_token,
-            params={
-                "fields": "id,name,status,objective",
-                "filtering": self._get_active_filter(),
-            },
+            params=params,
         )
 
         if not campaigns:
@@ -178,12 +182,19 @@ class FacebookClient(HttpClient):
             if not insight:
                 continue
 
+            # Skip campaigns with no activity in the period
+            spend = float(insight.get("spend") or 0)
+            impressions = int(float(insight.get("impressions") or 0))
+            if spend == 0 and impressions == 0:
+                continue
+
             result.append(
                 {
                     "campaign_id": campaign["id"],
                     "campaign_name": campaign.get("name"),
                     "objective": campaign.get("objective"),
                     "status": campaign.get("status"),
+                    "updated_time": campaign.get("updated_time"),
                     "insights": insight,
                 }
             )

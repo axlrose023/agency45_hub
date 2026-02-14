@@ -21,6 +21,7 @@ export interface CampaignResponse {
   campaign_name: string | null;
   objective: string | null;
   status: string | null;
+  updated_time: string | null;
   insights: InsightsData | null;
 }
 

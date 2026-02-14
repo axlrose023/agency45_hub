@@ -42,7 +42,7 @@ class APIConfig(BaseModel):
 class FacebookConfig(BaseModel):
     app_id: str
     app_secret: str
-    api_version: str = "v21.0"
+    api_version: str = "v24.0"
     base_url: str = "https://graph.facebook.com"
 
     # Insights fields
@@ -51,8 +51,8 @@ class FacebookConfig(BaseModel):
         "campaign_name,spend,impressions,clicks,cpc,cpm,ctr,reach,actions"
     )
 
-    # Active status filter
-    active_statuses: list[str] = ["ACTIVE"]
+    # Status filter (active + paused to include campaigns that had spend in period)
+    active_statuses: list[str] = ["ACTIVE", "PAUSED"]
 
 
 class TelegramConfig(BaseModel):

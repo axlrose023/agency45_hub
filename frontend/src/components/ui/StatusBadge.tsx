@@ -3,9 +3,10 @@ import { useI18n } from '@/i18n/locale';
 
 interface StatusBadgeProps {
   status: string | null;
+  updatedTime?: string | null;
 }
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
+export default function StatusBadge({ status, updatedTime }: StatusBadgeProps) {
   const { t } = useI18n();
   const s = (status || 'unknown').toUpperCase();
 
@@ -24,6 +25,11 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     ARCHIVED: t('statusArchived'),
   };
 
+  const label = labels[s as keyof typeof labels] || s;
+  const dateStr = s === 'PAUSED' && updatedTime
+    ? ` ${t('pausedSince')} ${new Date(updatedTime).toLocaleDateString()}`
+    : '';
+
   return (
     <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-medium border', style)}>
       <span className={cn(
@@ -33,7 +39,7 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
         s === 'DELETED' && 'bg-red-500',
         s !== 'ACTIVE' && s !== 'PAUSED' && s !== 'DELETED' && 'bg-brand-gray-400',
       )} />
-      {labels[s as keyof typeof labels] || s}
+      {label}{dateStr}
     </span>
   );
 }
