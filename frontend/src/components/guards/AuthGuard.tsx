@@ -5,7 +5,7 @@ import { getUserById } from '@/api/users';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function AuthGuard() {
-  const { isAuthenticated, loadFromStorage, userId, user, setUser } = useAuthStore();
+  const { isAuthenticated, loadFromStorage, setUser } = useAuthStore();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

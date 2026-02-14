@@ -18,6 +18,7 @@ export default function CampaignGroupPage() {
   const { t } = useI18n();
 
   const accountName = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_name`), [accountId]);
+  const currency = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_currency`) || 'USD', [accountId]);
   const [campaigns, setCampaigns] = useState<CampaignResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -85,14 +86,14 @@ export default function CampaignGroupPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <StatusBadge status={campaign.status} />
+                  <StatusBadge status={campaign.status} updatedTime={campaign.updated_time} />
                   <ChevronRight
                     size={20}
                     className="text-brand-gray-400 group-hover:text-brand-black transition-colors"
                   />
                 </div>
               </button>
-              <InsightGrid insights={campaign.insights} compact />
+              <InsightGrid insights={campaign.insights} currency={currency} compact />
             </div>
           ))}
         </div>

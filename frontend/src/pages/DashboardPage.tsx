@@ -42,25 +42,13 @@ function AccountCard({
         />
       </div>
 
-      <div className="flex items-center gap-3 mt-4">
-        {account.currency && (
+      {account.currency && (
+        <div className="mt-4">
           <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-heading font-medium bg-brand-gray-100 text-brand-gray-600">
             {account.currency}
           </span>
-        )}
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-heading font-medium ${account.account_status === 1
-              ? 'bg-emerald-50 text-emerald-700'
-              : 'bg-brand-gray-100 text-brand-gray-600'
-            }`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${account.account_status === 1 ? 'bg-emerald-500' : 'bg-brand-gray-400'
-              }`}
-          />
-          {account.account_status === 1 ? t('accountActive') : t('accountInactive')}
-        </span>
-      </div>
+        </div>
+      )}
     </button>
   );
 }
@@ -161,7 +149,10 @@ export default function DashboardPage() {
         <div className="w-full max-w-md">
           <AccountCard
             account={account}
-            onClick={() => navigate(`/accounts/${account.account_id}`, { state: { accountName: account.name } })}
+            onClick={() => {
+              sessionStorage.setItem(`fb_account_${account.account_id}_currency`, account.currency || 'USD');
+              navigate(`/accounts/${account.account_id}`, { state: { accountName: account.name } });
+            }}
             t={t}
           />
         </div>
@@ -185,7 +176,10 @@ export default function DashboardPage() {
           <AccountCard
             key={account.account_id}
             account={account}
-            onClick={() => navigate(`/accounts/${account.account_id}`, { state: { accountName: account.name } })}
+            onClick={() => {
+              sessionStorage.setItem(`fb_account_${account.account_id}_currency`, account.currency || 'USD');
+              navigate(`/accounts/${account.account_id}`, { state: { accountName: account.name } });
+            }}
             t={t}
           />
         ))}

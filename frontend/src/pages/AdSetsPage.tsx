@@ -18,6 +18,7 @@ export default function AdSetsPage() {
   const { t } = useI18n();
 
   const accountName = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_name`), [accountId]);
+  const currency = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_currency`) || 'USD', [accountId]);
   const [adsets, setAdsets] = useState<AdSetResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -64,7 +65,10 @@ export default function AdSetsPage() {
               className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6 hover:shadow-md hover:border-brand-gray-300 transition-all"
             >
               <button
-                onClick={() => navigate(`/adsets/${adset.adset_id}/ads`)}
+                onClick={() => {
+                  sessionStorage.setItem('fb_current_currency', currency);
+                  navigate(`/adsets/${adset.adset_id}/ads`);
+                }}
                 className="flex items-center justify-between mb-4 w-full text-left group"
               >
                 <div>
@@ -87,20 +91,20 @@ export default function AdSetsPage() {
               {/* Targeting summary */}
               {adset.targeting && Object.keys(adset.targeting).length > 0 && (
                 <div className="mb-4 flex flex-wrap gap-2">
-                  {adset.targeting.age_min && (
+                  {adset.targeting.age_min != null && (
                     <span className="px-2 py-0.5 bg-brand-gray-100 text-brand-gray-600 rounded text-xs font-body">
-                      {t('targetAge')}: {String(adset.targeting.age_min)}-{String(adset.targeting.age_max || '65+')}
+                      {t('targetAge')}: {String(adset.targeting.age_min)}-{String(adset.targeting.age_max ?? '65+')}
                     </span>
                   )}
-                  {adset.targeting.genders && (
+                  {adset.targeting.genders != null && (
                     <span className="px-2 py-0.5 bg-brand-gray-100 text-brand-gray-600 rounded text-xs font-body">
-                      {t('targetGender')}: {Array.isArray(adset.targeting.genders) ? (adset.targeting.genders as number[]).map((g) => (g === 1 ? t('targetGenderMale') : t('targetGenderFemale'))).join(', ') : t('targetGenderAll')}
+                      {t('targetGender')}: {Array.isArray(adset.targeting.genders) ? (adset.targeting.genders as number[]).map((g: number) => (g === 1 ? t('targetGenderMale') : t('targetGenderFemale'))).join(', ') : t('targetGenderAll')}
                     </span>
                   )}
                 </div>
               )}
 
-              <InsightGrid insights={adset.insights} compact />
+              <InsightGrid insights={adset.insights} currency={currency} compact />
             </div>
           ))}
         </div>

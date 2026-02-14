@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getCampaigns } from '@/api/facebook';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -57,6 +57,8 @@ export default function AdAccountPage() {
     }
     return sessionStorage.getItem(storageKey);
   })();
+
+  const currency = useMemo(() => sessionStorage.getItem(`fb_account_${accountId}_currency`) || 'USD', [accountId]);
 
   useEffect(() => {
     if (!accountId) return;
@@ -123,7 +125,7 @@ export default function AdAccountPage() {
                   className="text-brand-gray-400 group-hover:text-brand-black transition-colors"
                 />
               </button>
-              <InsightGrid insights={group.aggregatedInsights} compact />
+              <InsightGrid insights={group.aggregatedInsights} currency={currency} compact />
             </div>
           ))}
         </div>

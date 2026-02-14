@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAds } from '@/api/facebook';
 import { useDateRange } from '@/hooks/useDateRange';
@@ -16,6 +16,7 @@ export default function AdsPage() {
   const { dateRange } = useDateRange();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const currency = useMemo(() => sessionStorage.getItem('fb_current_currency') || 'USD', []);
   const [ads, setAds] = useState<AdResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -117,7 +118,7 @@ export default function AdsPage() {
 
               {/* Bottom: Insights on full width */}
               <div className="border-t border-brand-gray-200 p-4 sm:p-6 bg-brand-gray-50/50">
-                <InsightGrid insights={ad.insights} />
+                <InsightGrid insights={ad.insights} currency={currency} />
               </div>
             </div>
           ))}

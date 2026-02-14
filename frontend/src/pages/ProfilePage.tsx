@@ -1,9 +1,9 @@
 import { getAdAccounts } from '@/api/facebook';
-import { getChatId, getRegistrationLink, telegramLogout } from '@/api/telegram';
+import { type BroadcastPeriod, getChatId, getRegistrationLink, sendBroadcast, telegramLogout, toggleDailyReports } from '@/api/telegram';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/i18n/locale';
 import { useAuthStore } from '@/store/authStore';
-import { Building2, ExternalLink, LogOut, MessageCircle, RefreshCw, Send, Shield, Unlink, User } from 'lucide-react';
+import { BarChart3, Bell, BellOff, Building2, Calendar, CalendarDays, Check, Clock, ExternalLink, LogOut, MessageCircle, RefreshCw, Send, Shield, Unlink, User } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,12 +24,20 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [adAccountName, setAdAccountName] = useState<string | null>(null);
 
+  const [dailyEnabled, setDailyEnabled] = useState(false);
+  const [dailyToggling, setDailyToggling] = useState(false);
+
+  const [broadcastLoading, setBroadcastLoading] = useState<BroadcastPeriod | null>(null);
+  const [broadcastSuccess, setBroadcastSuccess] = useState(false);
+  const [broadcastError, setBroadcastError] = useState('');
+
   const checkConnection = useCallback(async () => {
     setChecking(true);
     try {
       const data = await getChatId();
       setChatId(data.chat_id);
       setTelegramUsername(data.telegram_username);
+      setDailyEnabled(data.telegram_daily_enabled);
       if (data.chat_id) {
         setTelegramConnected(true);
         setWaitingForBot(false);
@@ -103,12 +111,78 @@ export default function ProfilePage() {
     setLoading(false);
   };
 
+  const handleBroadcast = async (period: BroadcastPeriod) => {
+    setBroadcastLoading(period);
+    setBroadcastSuccess(false);
+    setBroadcastError('');
+    try {
+      await sendBroadcast(period, locale === 'ru' ? 'ru' : 'ua');
+      setBroadcastSuccess(true);
+      setTimeout(() => setBroadcastSuccess(false), 4000);
+    } catch {
+      setBroadcastError(t('broadcastError'));
+      setTimeout(() => setBroadcastError(''), 4000);
+    }
+    setBroadcastLoading(null);
+  };
+
+  const handleToggleDaily = async () => {
+    setDailyToggling(true);
+    try {
+      const newValue = !dailyEnabled;
+      await toggleDailyReports(newValue);
+      setDailyEnabled(newValue);
+    } catch {
+    }
+    setDailyToggling(false);
+  };
+
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
   };
 
   if (!user) return null;
+
+  const formatDate = (d: Date) => {
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}.${mm}`;
+  };
+
+  const getDateRange = (period: BroadcastPeriod): string => {
+    const today = new Date();
+    const fmt = formatDate(today);
+    if (period === 'today') return fmt;
+    if (period === 'yesterday') {
+      const d = new Date(today);
+      d.setDate(d.getDate() - 1);
+      return formatDate(d);
+    }
+    if (period === 'week') {
+      const d = new Date(today);
+      d.setDate(d.getDate() - 6);
+      return `${formatDate(d)} – ${fmt}`;
+    }
+    if (period === 'month') {
+      const d = new Date(today.getFullYear(), today.getMonth(), 1);
+      return `${formatDate(d)} – ${fmt}`;
+    }
+    if (period === 'last30') {
+      const d = new Date(today);
+      d.setDate(d.getDate() - 29);
+      return `${formatDate(d)} – ${fmt}`;
+    }
+    return fmt;
+  };
+
+  const broadcastButtons: { period: BroadcastPeriod; label: string; icon: typeof Calendar }[] = [
+    { period: 'today', label: t('broadcastToday'), icon: Clock },
+    { period: 'yesterday', label: t('broadcastYesterday'), icon: Calendar },
+    { period: 'week', label: t('broadcastWeek'), icon: CalendarDays },
+    { period: 'month', label: t('broadcastMonth'), icon: BarChart3 },
+    { period: 'last30', label: t('broadcastLast30'), icon: CalendarDays },
+  ];
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -260,6 +334,90 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Broadcast Card - only when Telegram is connected */}
+      {telegramConnected && (
+        <div className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <BarChart3 size={20} className="text-brand-gray-600" />
+            <h3 className="font-heading font-semibold text-brand-black">
+              {t('broadcastTitle')}
+            </h3>
+          </div>
+
+          <p className="text-sm text-brand-gray-500 mb-4">
+            {t('broadcastDescription')}
+          </p>
+
+          {/* Daily toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg border border-brand-gray-200 mb-4">
+            <div className="flex items-center gap-3">
+              {dailyEnabled ? (
+                <Bell size={18} className="text-brand-accent" />
+              ) : (
+                <BellOff size={18} className="text-brand-gray-400" />
+              )}
+              <div>
+                <p className="text-sm font-heading font-medium text-brand-black">
+                  {t('dailyReportsLabel')}
+                </p>
+                <p className="text-xs text-brand-gray-400">
+                  {t('dailyReportsDescription')}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleToggleDaily}
+              disabled={dailyToggling}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                dailyEnabled ? 'bg-brand-accent' : 'bg-brand-gray-300'
+              } disabled:opacity-50`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  dailyEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {broadcastSuccess && (
+            <div className="bg-emerald-50 text-emerald-700 text-sm rounded-lg px-4 py-3 border border-emerald-200 mb-4 flex items-center gap-2">
+              <Check size={16} />
+              {t('broadcastSent')}
+            </div>
+          )}
+
+          {broadcastError && (
+            <div className="bg-red-50 text-red-600 text-sm rounded-lg px-4 py-3 border border-red-200 mb-4">
+              {broadcastError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {broadcastButtons.map(({ period, label, icon: Icon }) => (
+              <button
+                key={period}
+                onClick={() => handleBroadcast(period)}
+                disabled={broadcastLoading !== null}
+                className="flex flex-col items-center gap-2 px-3 py-3 border border-brand-gray-200 rounded-lg text-sm font-heading font-medium text-brand-gray-700 hover:bg-brand-gray-50 hover:border-brand-gray-300 transition-colors disabled:opacity-50"
+              >
+                {broadcastLoading === period ? (
+                  <RefreshCw size={18} className="animate-spin text-brand-accent" />
+                ) : (
+                  <Icon size={18} className="text-brand-gray-500" />
+                )}
+                <span className="text-xs">
+                  {broadcastLoading === period ? t('broadcastSending') : label}
+                </span>
+                <span className="text-[10px] text-brand-gray-400 font-normal">
+                  {getDateRange(period)}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Logout */}
       <div className="bg-white rounded-xl border border-brand-gray-200 p-4 sm:p-6">
