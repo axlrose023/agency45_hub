@@ -31,3 +31,5 @@ class User(Base, UUID7IDMixin, DateTimeMixin):
     )
     telegram_username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     telegram_token: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    telegram_daily_enabled: Mapped[bool] = mapped_column(default=False)
+    locale: Mapped[str | None] = mapped_column(String(5), nullable=True, default="ua")

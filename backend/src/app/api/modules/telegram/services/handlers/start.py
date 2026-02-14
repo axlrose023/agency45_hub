@@ -87,7 +87,7 @@ def register_start_handler(dp: Dispatcher) -> None:
             )
             tg_username = message.from_user.username if message.from_user else None
             await gateway.update_telegram_chat_id(
-                user.id, chat_id, username=tg_username
+                user.id, chat_id, username=tg_username, locale=response_locale,
             )
             await session.commit()
 
