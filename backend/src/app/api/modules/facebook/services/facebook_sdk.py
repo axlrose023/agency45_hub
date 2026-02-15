@@ -30,7 +30,9 @@ class FacebookSDKService:
         access_token: str,
         time_range: dict[str, str],
     ) -> list[dict[str, Any]]:
-        return await self.client.get_campaigns(account_id, access_token, time_range)
+        return await self.client.get_campaigns(
+            account_id, access_token, time_range, active_only=False
+        )
 
     async def get_adsets(
         self,

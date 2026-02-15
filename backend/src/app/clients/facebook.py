@@ -213,7 +213,6 @@ class FacebookClient(HttpClient):
             access_token,
             params={
                 "fields": "id,name,targeting,status",
-                "filtering": self._get_active_filter(),
             },
         )
 
@@ -279,7 +278,6 @@ class FacebookClient(HttpClient):
             access_token,
             params={
                 "fields": "id,name,status,creative{id,thumbnail_url,body,title,link_url,image_url,video_id}",
-                "filtering": self._get_active_filter(),
             },
         )
 
