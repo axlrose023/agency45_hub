@@ -3,20 +3,21 @@ import { useI18n } from '@/i18n/locale';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/utils/cn';
 import { ChevronLeft, ChevronRight, LayoutDashboard, LogOut, User, Users, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
   mobileOpen: boolean;
   onMobileClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
+export default function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse }: SidebarProps) {
   const { user, isAdmin } = useAuth();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
   const { t } = useI18n();
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <div className="border-t border-brand-gray-800">
         {/* Collapse toggle — desktop only */}
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={onToggleCollapse}
           className="hidden lg:flex items-center justify-center w-full py-3 text-brand-gray-500 hover:text-white hover:bg-white/5 transition-colors"
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -121,7 +122,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'bg-brand-black text-white flex-col min-h-screen sticky top-0 transition-all duration-300 hidden lg:flex',
+          'bg-brand-black text-white flex-col h-screen fixed left-0 top-0 z-30 transition-all duration-300 hidden lg:flex',
           collapsed ? 'w-[72px]' : 'w-64',
         )}
       >

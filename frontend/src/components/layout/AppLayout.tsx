@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import { DateRangeContext, getDefaultDateRange } from '@/hooks/useDateRange';
 import type { DateRange } from '@/types/facebook';
+import { cn } from '@/utils/cn';
 
 export default function AppLayout() {
   const [dateRange, setDateRangeState] = useState<DateRange>(() => {
@@ -19,12 +20,23 @@ export default function AppLayout() {
     setDateRangeState(range);
   };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <DateRangeContext.Provider value={{ dateRange, setDateRange }}>
       <div className="flex min-h-screen bg-brand-gray-50">
-        <Sidebar mobileOpen={mobileMenuOpen} onMobileClose={() => setMobileMenuOpen(false)} />
-        <div className="flex-1 flex flex-col min-w-0">
+        <Sidebar
+          mobileOpen={mobileMenuOpen}
+          onMobileClose={() => setMobileMenuOpen(false)}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+        <div
+          className={cn(
+            'flex-1 flex flex-col min-w-0 transition-all duration-300',
+            sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64',
+          )}
+        >
           <TopBar onMenuToggle={() => setMobileMenuOpen(true)} />
           <main className="flex-1 p-4 sm:p-6 overflow-auto">
             <Outlet />
